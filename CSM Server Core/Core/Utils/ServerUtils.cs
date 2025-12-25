@@ -146,7 +146,7 @@ public static class ServerUtils {
             ConsoleUtils.Exception(AX);
             throw;
         } catch (Exception X) {
-            ConsoleUtils.Exception(new SystemError($"Engine start exception", X));
+            ConsoleUtils.Exception(new SystemError(X.Message, X));
         } finally {
             Console.WriteLine($"Press any key to close...");
             Console.ReadKey();
