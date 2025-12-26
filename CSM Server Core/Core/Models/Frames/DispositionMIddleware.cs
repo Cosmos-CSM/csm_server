@@ -1,4 +1,5 @@
-﻿using CSM_Server_Core.Core.Errors;
+﻿using CSM_Server_Core.Abstractions.Interfaces;
+using CSM_Server_Core.Core.Errors;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -11,9 +12,9 @@ public class DispositionMiddleware
     const string DISP_HEAD_KEY = "CSMDisposition";
     const string DISP_HEAD_VALUE = "Quality";
 
-    readonly ServerDisposer _disposer;
+    readonly IServerDisposer _disposer;
 
-    public DispositionMiddleware(ServerDisposer disposer) {
+    public DispositionMiddleware(IServerDisposer disposer) {
         _disposer = disposer;
     }
 

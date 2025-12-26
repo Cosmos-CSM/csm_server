@@ -138,7 +138,13 @@ public static class ServerUtils {
             builder.Services.AddSingleton<AdvisorMiddleware>();
             builder.Services.AddSingleton(framingMiddleware);
             builder.Services.AddSingleton<DispositionMiddleware>();
-            builder.Services.AddSingleton<IDisposer<IEntity>, ServerDisposer>();
+
+            builder.Services.AddSingleton<IServerDisposer>(
+                    serviceProvider => new ServerDisposer(serviceProvider)
+                );
+            builder.Services.AddSingleton<IDisposer<IEntity>>(
+                    serviceProvider => serviceProvider.GetRequiredService<IServerDisposer>()
+                );
 
             // --> Passing implementation server configuration priority.
             await buildApplication(builder, serverSettings);

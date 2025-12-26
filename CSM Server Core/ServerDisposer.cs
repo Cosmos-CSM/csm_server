@@ -5,6 +5,8 @@ using CSM_Database_Core.Entities.Abstractions.Interfaces;
 using CSM_Foundation_Core.Core.Extensions;
 using CSM_Foundation_Core.Core.Utils;
 
+using CSM_Server_Core.Abstractions.Interfaces;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +15,7 @@ namespace CSM_Server_Core;
 
 /// <inheritdoc cref="CSM_Foundation_Core.Abstractions.Interfaces.IDisposer{IEntity}"/>
 public class ServerDisposer
-    : CSM_Foundation_Core.Abstractions.Interfaces.IDisposer<IEntity> {
+    : IServerDisposer {
 
     /// <summary>
     ///     Wheter the manager must keep track data or not.
@@ -84,12 +86,6 @@ public class ServerDisposer
         }
     }
 
-    /// <summary>
-    ///     Changes the manager state.
-    /// </summary>
-    /// <param name="active">
-    ///     Wheter the manager must be tracking data or not.
-    /// </param>
     public void ChangeState(bool active) {
         _isActive = active;
     }
