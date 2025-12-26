@@ -122,7 +122,7 @@ public class FramingMiddleware
                         Content = errorContent,
                     };
 
-                    response.StatusCode = (int)error.Event;
+                    response.StatusCode = (int)error.Status;
                     encodedContent = JsonSerializer.Serialize(frame);
                 } else if (response.StatusCode != 200) {
 
