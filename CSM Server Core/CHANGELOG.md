@@ -1,5 +1,21 @@
 ﻿# CSM Server Core CHANGELOG
 
+## [2.0.0] - 25.12-2025
+
+### Changed
+
+- Now Start engine method handles automatic configurations and middlewares.
+
+### Added
+
+- Now start engine method requires the framing middleware instance configuration to work.
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| CSM.Foundation.Core                     | 2.1.1            | 2.1.1           |
+
 ## [1.1.0] - 25.12-2025
 
 ### Changed

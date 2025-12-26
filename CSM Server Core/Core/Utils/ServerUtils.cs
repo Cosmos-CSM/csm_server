@@ -2,17 +2,24 @@
 using System.Net.Sockets;
 using System.Text.Json;
 
+using CSM_Database_Core.Entities.Abstractions.Interfaces;
+
+using CSM_Foundation_Core.Abstractions.Interfaces;
 using CSM_Foundation_Core.Core.Exceptions;
 using CSM_Foundation_Core.Core.Utils;
 using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
 using CSM_Server_Core.Abstractions.Interfaces;
 using CSM_Server_Core.Core.Models;
+using CSM_Server_Core.Core.Models.Frames;
+using CSM_Server_Core.Middlewares;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using TWS_Foundation.Middlewares;
 
 namespace CSM_Server_Core.Core.Utils;
 
@@ -39,6 +46,9 @@ public static class ServerUtils {
     /// <param name="sign">
     ///     Application built time sign identification.
     /// </param>
+    /// <param name="framingMiddleware">
+    ///     Framing middleware instance with their database control methods.
+    /// </param>
     /// <param name="buildApplication">
     ///     Application building process custom call.
     /// </param>
@@ -46,7 +56,7 @@ public static class ServerUtils {
     ///     Application running configuration custom call.
     /// </param>
     /// <exception cref="InvalidDataException"></exception>
-    public static async void Start(string sign, Func<WebApplicationBuilder, ServerSettings, Task> buildApplication, Func<WebApplication, ServerSettings, Task> configApp) {
+    public static async void Start(string sign, FramingMiddleware framingMiddleware, Func<WebApplicationBuilder, ServerSettings, Task> buildApplication, Func<WebApplication, ServerSettings, Task> configApp) {
         try {
             sign = sign.ToUpper();
             // --> Fetching for server customization module.
@@ -58,13 +68,14 @@ public static class ServerUtils {
                             try {
                                 return assembly.GetTypes();
                             } catch {
-                                return Array.Empty<Type>();
+                                return [];
                             }
                         }
                     )
                 .Where(
                         (type) => moduleType.IsAssignableFrom(type) && type.IsClass && !type.IsAbstract
                     );
+
             int serverModulesCount = appAssemblies.Count();
             if (serverModulesCount > 1)
                 throw new InvalidDataException($"Several server modules (IServerModule) have been found but there's only one available per solution, please correct to load correctly");
@@ -122,7 +133,12 @@ public static class ServerUtils {
                 );
                 }
                 );
+
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSingleton<AdvisorMiddleware>();
+            builder.Services.AddSingleton(framingMiddleware);
+            builder.Services.AddSingleton<DispositionMiddleware>();
+            builder.Services.AddSingleton<IDisposer<IEntity>, ServerDisposer>();
 
             // --> Passing implementation server configuration priority.
             await buildApplication(builder, serverSettings);
