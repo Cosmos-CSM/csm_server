@@ -11,15 +11,12 @@ using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
 using CSM_Server_Core.Abstractions.Interfaces;
 using CSM_Server_Core.Core.Models;
-using CSM_Server_Core.Core.Models.Frames;
 using CSM_Server_Core.Middlewares;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using TWS_Foundation.Middlewares;
 
 namespace CSM_Server_Core.Core.Utils;
 
@@ -155,6 +152,10 @@ public static class ServerUtils {
             WebApplication app = builder.Build();
             app.MapControllers();
             app.UseCors();
+
+            app.UseMiddleware<AdvisorMiddleware>();
+            app.UseMiddleware<FramingMiddleware>();
+            app.UseMiddleware<DispositionMiddleware>();
 
             await configApp(app, serverSettings);
             if (serverModule != null) {

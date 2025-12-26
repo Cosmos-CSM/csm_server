@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 using JObject = System.Collections.Generic.Dictionary<string, object?>;
 
-namespace TWS_Foundation.Middlewares;
+namespace CSM_Server_Core.Middlewares;
 
 /// <summary>
 ///     Represents a server middleware that handles console logging information through requests.

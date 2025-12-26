@@ -4,7 +4,7 @@ using CSM_Server_Core.Core.Errors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace CSM_Server_Core.Core.Models.Frames;
+namespace CSM_Server_Core.Middlewares;
 
 public class DispositionMiddleware
     : IMiddleware {
