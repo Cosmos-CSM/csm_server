@@ -11,7 +11,7 @@ public enum ServerErrorEvents {
     /// <summary>
     ///     Trigger when an inner error was caught and is being wrapped. 
     /// </summary>
-    WRAP_ERROR
+    WRAP_ERROR,
 }
 
 /// <inheritdoc cref="ServerErrorBase{TEvents}"/>

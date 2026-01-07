@@ -22,7 +22,6 @@ public class ErrorInfo {
     /// </summary>
     public required int Event { get; init; }
 
-
     /// <summary>
     ///     System error message.
     /// </summary>
