@@ -2,6 +2,7 @@
 using System.Text.Json;
 
 using CSM_Foundation_Core.Core.Utils;
+using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
 using Microsoft.AspNetCore.Http;
 
@@ -14,20 +15,25 @@ namespace CSM_Server_Core.Middlewares;
 /// </summary>
 public class AdvisorMiddleware
     : IMiddleware {
+
     public async Task InvokeAsync(HttpContext context, RequestDelegate next) {
         try {
             ConsoleUtils.Announce(
-                $"Received server request from ({context.Connection.RemoteIpAddress}:{context.Connection.RemotePort})",
+                $"Request received",
                 new() {
-                    {"Tracer", context.TraceIdentifier }
+                    { "Tracer", context.TraceIdentifier },
+                    { "Address", $"({context.Connection.RemoteIpAddress}:{context.Connection.RemotePort})" },
                 }
             );
-            Stream OriginalStream = context.Response.Body;
+
+            Stream originalStream = context.Response.Body;
             await next(context);
+
             HttpResponse Response = context.Response;
             if (!Response.HasStarted) {
                 Stream bufferStream = Response.Body;
                 JObject? responseContent = await JsonSerializer.DeserializeAsync<JObject>(bufferStream);
+                
                 if (responseContent != null && responseContent.TryGetValue("Details", out dynamic? value)) {
                     JsonElement Estela = value;
                     JObject? EstelaObject = Estela.Deserialize<JObject>();
@@ -42,11 +48,21 @@ public class AdvisorMiddleware
 
                 if (Response.StatusCode != 204) {
                     _ = bufferStream.Seek(0, SeekOrigin.Begin);
-                    await bufferStream.CopyToAsync(OriginalStream);
-                    Response.Body = OriginalStream;
+                    await bufferStream.CopyToAsync(originalStream);
+                    Response.Body = originalStream;
                 }
             }
-        } catch {
+        } catch (Exception ex) when (ex is IError error) {
+            ConsoleUtils.Exception(error);
+            throw;
+        } catch (Exception ex) {
+            ConsoleUtils.Warning(
+                    "Exception at Advisor middleware with no ancestor",
+                    new JObject {
+                        { "Message", ex.Message },
+                        { "StackTrace", ex.StackTrace }
+                    }
+                );
             throw;
         }
     }
