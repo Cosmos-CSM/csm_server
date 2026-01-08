@@ -22,7 +22,6 @@ public class ServerErrorBase<TEvents>
     public HttpStatusCode Status { get; }
 
     object IServerError.Event { get => Convert.ToInt32(Event); }
-
     
 
     /// <summary>

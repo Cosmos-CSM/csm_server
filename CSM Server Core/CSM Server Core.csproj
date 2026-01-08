@@ -25,6 +25,6 @@
 
     <ItemGroup>
         <PackageReference Include="CSM.Database.Core" Version="4.1.2" />
-        <PackageReference Include="CSM.Foundation.Core" Version="2.1.1" />
+        <PackageReference Include="CSM.Foundation.Core" Version="3.0.1" />
     </ItemGroup>
 </Project>
