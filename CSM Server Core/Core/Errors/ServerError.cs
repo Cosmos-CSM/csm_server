@@ -1,4 +1,6 @@
-﻿using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
+﻿using System.Text.Json.Serialization;
+
+using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
 using CSM_Server_Core.Abstractions.Bases;
 
@@ -17,6 +19,9 @@ public enum ServerErrorEvents {
 /// <inheritdoc cref="ServerErrorBase{TEvents}"/>
 public class ServerError
     : ServerErrorBase<ServerErrorEvents> {
+
+    [JsonIgnore]
+    new Exception? Exception { get; }
 
     /// <summary>
     ///     Creates a new instance.

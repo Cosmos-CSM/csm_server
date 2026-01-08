@@ -17,13 +17,13 @@ public class ServerErrorBase<TEvents>
     : ErrorBase<TEvents>, IServerError<TEvents>
     where TEvents : Enum {
 
-
-
     public IError? Error { get; }
 
     public HttpStatusCode Status { get; }
 
     object IServerError.Event { get => Convert.ToInt32(Event); }
+
+    
 
     /// <summary>
     ///     Creates a new instance.
