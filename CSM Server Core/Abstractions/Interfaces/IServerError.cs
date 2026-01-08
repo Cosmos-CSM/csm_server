@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json.Serialization;
 
 using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
@@ -24,6 +25,9 @@ public interface IServerError
     ///     Indicates a custom status code for the transaction resolution.
     /// </summary>
     public HttpStatusCode Status { get; }
+
+    [JsonIgnore]
+    public new Exception? Exception { get; }
 }
 
 /// <inheritdoc cref="IServerError"/>
