@@ -102,7 +102,10 @@ public class FramingMiddleware
             /// --> Rollbacking database changes
             await _transactionsRollback(context.RequestServices);
         } catch (Exception ex) {
-            ServerError systemError = new(exception: ex);
+            ServerError systemError = new(
+                exception: ex, 
+                error: new SystemError(ex.Message)
+            );
             error = systemError;
 
             /// --> Rollbacking database changes
