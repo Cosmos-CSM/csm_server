@@ -31,25 +31,13 @@ public class ActionAttribute
         HttpContext reqContext = context.HttpContext;
 
         // Resolve session manager
-        var sessionManager = reqContext.RequestServices.GetRequiredService<ISessionManager>();
+        ISessionManager sessionManager = reqContext.RequestServices.GetRequiredService<ISessionManager>();
 
-        // Get the controller type from the ActionDescriptor
-        var controllerType = (context.ActionDescriptor
-            .EndpointMetadata
-            .OfType<Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor>()
-            .FirstOrDefault()
-            ?.ControllerTypeInfo)
-            ?? throw new ServerAuthError(ServerAuthErrorEvents.UNFOUND_CONTROLLER);
+        IList<object> endpointMetaData = context.ActionDescriptor.EndpointMetadata;
+        FeatureAttribute featureAttribute = endpointMetaData.OfType<FeatureAttribute>().FirstOrDefault()
+            ?? throw new ServerAuthError(ServerAuthErrorEvents.UNFOUND_FEATURE);
 
-        // Read the FeatureAttribute from the controller
-
-        if (controllerType
-            .GetCustomAttributes(typeof(FeatureAttribute), inherit: true)
-            .FirstOrDefault() is not FeatureAttribute featureAttr) {
-            throw new ServerAuthError(ServerAuthErrorEvents.UNFOUND_FEATURE);
-        }
-
-        string featureName = featureAttr.Feature;
+        string featureName = featureAttribute.Feature;
 
         // Now validate Feature + Action
         bool canAct = sessionManager.ValidateUserAction(featureName, Action, reqContext);
