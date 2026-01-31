@@ -11,8 +11,6 @@ using Xunit;
 
 namespace CSM_Server_Core_Testing.Abstractions.Bases;
 
-
-
 /// <summary>
 ///     Represents a <see cref="IService"/> tests class.
 /// </summary>
