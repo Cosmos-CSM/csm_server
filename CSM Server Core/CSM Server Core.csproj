@@ -13,6 +13,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
 		<IsPackable>true</IsPackable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
 	<ItemGroup>

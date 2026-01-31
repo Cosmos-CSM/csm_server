@@ -3,5 +3,6 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
   </Folder>
+  <Project Path="CSM Server Core Testing/CSM Server Core Testing.csproj" Id="210695c7-7703-49e2-b7ef-6e3f5570ca8a" />
   <Project Path="CSM Server Core/CSM Server Core.csproj" />
 </Solution>
