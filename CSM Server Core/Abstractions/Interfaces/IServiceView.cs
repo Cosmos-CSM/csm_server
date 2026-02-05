@@ -17,10 +17,10 @@ public interface IServiceView<TEntity>
     ///     Generates a <typeparamref name="TEntity"/> view,
     /// </summary>
     /// <param name="input">
-    ///     <see cref="QueryInput{TEntity, TParameters}"/> data.
+    ///     <see cref="ViewInput{T}"/> data.
     /// </param>
     /// <returns>
     ///     <see cref="ViewOutput{TEntity}"/> data.
     /// </returns>
-    Task<ViewOutput<TEntity>> View(QueryInput<TEntity, ViewInput<TEntity>> input);
+    Task<ViewOutput<TEntity>> View(ViewInput<TEntity> input);
 }

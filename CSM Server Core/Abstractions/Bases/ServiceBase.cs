@@ -6,7 +6,6 @@ using CSM_Server_Core.Abstractions.Interfaces;
 
 namespace CSM_Server_Core.Abstractions.Bases;
 
-
 /// <summary>
 ///     Represents a business operations service.
 /// </summary>
@@ -55,16 +54,33 @@ public abstract class ServiceBase<TEntity, TDepot>
         _postProcessor = postProcessor;
     }
 
+    /// <inheritdoc/>
+    public virtual Task<ViewOutput<TEntity>> View(ViewInput<TEntity> input)
+    => _depot.View(
+            GetOperationInput(
+                    new QueryInput<TEntity, ViewInput<TEntity>> {
+                        Parameters = input,
+                    }
+                )
+        );
 
+    /// <inheritdoc/>
     public virtual Task<TEntity> Create(TEntity entity)
     => _depot.Create(entity);
 
+    /// <inheritdoc/>
     public virtual Task<BatchOperationOutput<TEntity>> Create(TEntity[] entities, bool sync = false)
     => _depot.Create(entities, sync);
 
-
+    /// <inheritdoc/>
     public virtual Task<UpdateOutput<TEntity>> Update(UpdateInput<TEntity> input)
-    => _depot.Update(GetOperationInput(input));
+    => _depot.Update(
+            GetOperationInput(
+                    new QueryInput<TEntity, UpdateInput<TEntity>> {
+                        Parameters = input,
+                    }
+                )
+        );
 
 
     public virtual Task<TEntity> Delete(long id)
@@ -79,15 +95,16 @@ public abstract class ServiceBase<TEntity, TDepot>
     public virtual Task<BatchOperationOutput<TEntity>> Delete(TEntity[] entities)
     => _depot.Delete(entities);
 
-
-    public virtual Task<ViewOutput<TEntity>> View(QueryInput<TEntity, ViewInput<TEntity>> input)
-    => _depot.View(input);
-
-
-    protected QueryInput<TEntity, TParameters> GetOperationInput<TParameters>(TParameters parameters)
+    /// <summary>
+    ///     Gets the default <see cref="ServiceBase{TEntity, TDepot}"/> query input.
+    /// </summary>
+    /// <typeparam name="TParameters"></typeparam>
+    /// <param name="serviceQueryInput"></param>
+    /// <returns></returns>
+    protected QueryInput<TEntity, TParameters> GetOperationInput<TParameters>(QueryInput<TEntity, TParameters> serviceQueryInput)
     => new() {
-        Parameters = parameters,
-        PreProcessor = _preProcessor,
-        PostProcessor = _postProcessor,
+        Parameters = serviceQueryInput.Parameters,
+        PreProcessor = serviceQueryInput.PreProcessor ?? _preProcessor,
+        PostProcessor = serviceQueryInput.PostProcessor ?? _postProcessor,
     };
 }
