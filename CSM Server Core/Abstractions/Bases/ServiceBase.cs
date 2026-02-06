@@ -82,16 +82,19 @@ public abstract class ServiceBase<TEntity, TDepot>
                 )
         );
 
-
+    /// <inheritdoc/>
     public virtual Task<TEntity> Delete(long id)
     => _depot.Delete(id);
 
+    /// <inheritdoc/>
     public virtual Task<TEntity> Delete(TEntity entity)
     => _depot.Delete(entity);
 
+    /// <inheritdoc/>
     public virtual Task<BatchOperationOutput<TEntity>> Delete(long[] ids)
     => _depot.Delete(ids);
 
+    /// <inheritdoc/>
     public virtual Task<BatchOperationOutput<TEntity>> Delete(TEntity[] entities)
     => _depot.Delete(entities);
 

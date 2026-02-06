@@ -50,11 +50,7 @@ public abstract class EntityControllerBase<TEntityService, TEntity>
     [HttpPost, Action("View")]
     public virtual async Task<IActionResult> View(ViewInput<TEntity> input) {
         return Ok(
-                await _service.View(
-                        new QueryInput<TEntity, ViewInput<TEntity>> {
-                            Parameters = input,
-                        }
-                    )
+                await _service.View(input)
             );
     }
 

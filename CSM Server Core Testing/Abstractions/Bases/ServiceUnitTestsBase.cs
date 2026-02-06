@@ -167,7 +167,6 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         BatchOperationOutput<TEntity> output = await service.Create(expectedEntities, true);
 
         // --> Asserting.
-
         Assert.False(output.Failed);
         Assert.Empty(output.Failures);
         Assert.Equal(0, output.FailuresCount);
@@ -361,6 +360,225 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
             );
         depotMock.Verify(
                 obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>()),
+                Times.Once()
+            );
+    }
+
+    /// <summary>
+    ///     Tests that the method <see cref="IServiceDelete{TEntity}.Delete(long)"/> correctly deletes the given entity with the id.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_DeletesEntity_FromId() {
+        // --> Expectation
+        TEntity expectation = new() {
+            Id = 1,
+            Timestamp = DateTime.UtcNow,
+        };
+
+        // --> Mocking setup
+        Mock<IDepot<TEntity>> depotMock = new();
+        TService service = ServiceFactory(depotMock.Object);
+
+        depotMock.Setup(
+                obj => obj.Delete(
+                        It.Is<long>(id => id == expectation.Id)
+                    )
+            ).Returns(
+                () => {
+                    return expectation;
+                }
+            );
+
+        // --> Executing.
+        TEntity deletedEntity = await service.Delete(expectation.Id);
+
+        // --> Asserting.
+        Assert.NotNull(deletedEntity);
+        Assert.Multiple(
+                [
+                    () => Assert.Equal(expectation.Id, deletedEntity.Id),
+                    () => Assert.Equal(expectation.Timestamp, deletedEntity.Timestamp),
+                ]
+            );
+        depotMock.Verify(
+                obj => obj.Delete(
+                        It.Is<long>(id => id == expectation.Id)
+                    ),
+                Times.Once()
+            );
+    }
+
+    /// <summary>
+    ///     Tests that the method <see cref="IServiceDelete{TEntity}.Delete(TEntity)"/> correctly deletes the given entity with the id.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_DeletesEntity() {
+        // --> Expectation
+        TEntity expectation = new() {
+            Id = 1,
+            Timestamp = DateTime.UtcNow,
+        };
+
+        // --> Mocking setup
+        Mock<IDepot<TEntity>> depotMock = new();
+        TService service = ServiceFactory(depotMock.Object);
+
+        depotMock.Setup(
+                obj => obj.Delete(
+                        It.IsAny<TEntity>()
+                    )
+            ).Returns(
+                () => {
+                    return expectation;
+                }
+            );
+
+        // --> Executing.
+        TEntity deletedEntity = await service.Delete(expectation);
+
+        // --> Asserting.
+        Assert.NotNull(deletedEntity);
+        Assert.Multiple(
+                [
+                    () => Assert.Equal(expectation.Id, deletedEntity.Id),
+                    () => Assert.Equal(expectation.Timestamp, deletedEntity.Timestamp),
+                ]
+            );
+        depotMock.Verify(
+                obj => obj.Delete(It.IsAny<TEntity>()),
+                Times.Once()
+            );
+    }
+
+    /// <summary>
+    ///     Tests that the method <see cref="IServiceDelete{TEntity}.Delete(long[])"/> correctly deletes the given entity with the id.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_DeletesEntities_FromIds() {
+        // --> Expectation
+        long[] idsToRemove = [1, 2, 3];
+
+        // --> Mocking setup
+        Mock<IDepot<TEntity>> depotMock = new();
+        TService service = ServiceFactory(depotMock.Object);
+
+        depotMock.Setup(
+                obj => obj.Delete(
+                        It.IsAny<long[]>()
+                    )
+            ).Returns(
+                (long[] ids) => {
+                    return new BatchOperationOutput<TEntity>(
+                            [
+                                ..ids.Select(
+                                    id => new TEntity {
+                                        Id = id,
+                                        Timestamp = DateTime.UtcNow
+                                    }
+                                )
+                            ],
+                            []
+                        );
+                }
+            );
+
+        // --> Executing.
+        BatchOperationOutput<TEntity> output = await service.Delete(idsToRemove);
+
+        // --> Asserting.
+        Assert.False(output.Failed);
+        Assert.Empty(output.Failures);
+        Assert.Equal(0, output.FailuresCount);
+        Assert.NotEmpty(output.Successes);
+        Assert.Equal(idsToRemove.Length, output.SuccessesCount);
+        Assert.Equal(idsToRemove.Length, output.OperationsCount);
+        Assert.All(
+                output.Successes,
+                (deletedEntity, index) => {
+
+                    long expectedId = idsToRemove[index];
+
+                    Assert.Multiple(
+                            [
+                                () => Assert.Equal(expectedId, deletedEntity.Id),
+                            ]
+                        );
+                }
+            );
+        depotMock.Verify(
+                obj => obj.Delete(
+                        It.IsAny<long[]>()
+                    ),
+                Times.Once()
+            );
+    }
+
+    /// <summary>
+    ///     Tests that the method <see cref="IServiceDelete{TEntity}.Delete(TEntity[])"/> correctly deletes the given entity with the id.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_DeletesEntities() {
+        // --> Expectation
+        TEntity[] entitesToRemove = [
+                new TEntity {
+                        Id = 1,
+                        Timestamp = DateTime.UtcNow
+                    },
+                new TEntity {
+                        Id = 2,
+                        Timestamp = DateTime.UtcNow
+                    },
+                new TEntity {
+                        Id = 3,
+                        Timestamp = DateTime.UtcNow
+                    },
+            ];
+
+        // --> Mocking setup
+        Mock<IDepot<TEntity>> depotMock = new();
+        TService service = ServiceFactory(depotMock.Object);
+
+        depotMock.Setup(
+                obj => obj.Delete(
+                        It.IsAny<TEntity[]>()
+                    )
+            ).Returns(
+                (TEntity[] entities) => {
+                    return new BatchOperationOutput<TEntity>(
+                            entities,
+                            []
+                        );
+                }
+            );
+
+        // --> Executing.
+        BatchOperationOutput<TEntity> output = await service.Delete(entitesToRemove);
+
+        // --> Asserting.
+        Assert.False(output.Failed);
+        Assert.Empty(output.Failures);
+        Assert.Equal(0, output.FailuresCount);
+        Assert.NotEmpty(output.Successes);
+        Assert.Equal(entitesToRemove.Length, output.SuccessesCount);
+        Assert.Equal(entitesToRemove.Length, output.OperationsCount);
+        Assert.All(
+                output.Successes,
+                (deletedEntity, index) => {
+
+                    TEntity expectedEntity = entitesToRemove[index];
+
+                    Assert.Multiple(
+                            [
+                                () => Assert.Equal(expectedEntity.Id, deletedEntity.Id),
+                                () => Assert.Equal(expectedEntity.Timestamp, deletedEntity.Timestamp)
+                            ]
+                        );
+                }
+            );
+        depotMock.Verify(
+                obj => obj.Delete(
+                        It.IsAny<TEntity[]>()
+                    ),
                 Times.Once()
             );
     }
