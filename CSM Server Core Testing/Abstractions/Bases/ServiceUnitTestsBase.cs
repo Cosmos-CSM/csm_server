@@ -62,7 +62,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                 obj => obj.View(It.IsAny<QueryInput<TEntity, ViewInput<TEntity>>>())
             )
             .Returns(
-                (QueryInput<IEntity, ViewInput<TEntity>> input) => {
+                async (QueryInput<IEntity, ViewInput<TEntity>> input) => {
 
                     return new ViewOutput<IEntity> {
                         Count = input.Parameters.Range,
