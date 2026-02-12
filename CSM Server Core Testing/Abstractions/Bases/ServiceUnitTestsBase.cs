@@ -335,7 +335,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
         TService service = ServiceFactory(depotMock.Object);
         depotMock.Setup(
                 obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
-            ).Callback(
+            ).Returns(
                 (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
                     if (!input.Parameters.Create) {
                         return new UpdateOutput<TEntity> {
@@ -347,7 +347,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         };
                     }
 
-                    return null;
+                    throw new Exception("Expected update operation for not creation.");
                 }
             );
 
