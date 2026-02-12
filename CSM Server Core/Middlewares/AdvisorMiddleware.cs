@@ -16,6 +16,7 @@ namespace CSM_Server_Core.Middlewares;
 public class AdvisorMiddleware
     : IMiddleware {
 
+    /// <inheritdoc/>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next) {
         try {
             ConsoleUtils.Announce(

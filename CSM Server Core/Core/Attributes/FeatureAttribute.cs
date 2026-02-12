@@ -1,7 +1,7 @@
 ﻿namespace CSM_Server_Core.Core.Attributes;
 
 /// <summary>
-///     Attribute to determine the Feature representation for a <seealso cref="ControllerBase"/> class.
+///     Attribute to determine the Feature representation for a server service provider.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 public class FeatureAttribute

@@ -72,6 +72,7 @@ public class FramingMiddleware
         return JsonSerializer.Deserialize<Dictionary<string, object?>>(errorTextContent)!;
     }
 
+    /// <inheritdoc/>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next) {
         if (!Guid.TryParse(context.TraceIdentifier, out Guid Tracer)) {
             Tracer = Guid.NewGuid();
@@ -94,12 +95,12 @@ public class FramingMiddleware
         } catch (Exception ex) when (ex is IError exError) {
             error = new ServerError(error: exError);
 
-            /// --> Rollbacking database changes
+            // --> Rollbacking database changes
             await _transactionsRollback(context.RequestServices);
         } catch (Exception ex) when (ex is IServerError serverError) {
             error = serverError;
 
-            /// --> Rollbacking database changes
+            // --> Rollbacking database changes
             await _transactionsRollback(context.RequestServices);
         } catch (Exception ex) {
             ServerError systemError = new(
@@ -108,7 +109,7 @@ public class FramingMiddleware
             );
             error = systemError;
 
-            /// --> Rollbacking database changes
+            // --> Rollbacking database changes
             await _transactionsRollback(context.RequestServices);
         } finally {
             HttpResponse response = context.Response;

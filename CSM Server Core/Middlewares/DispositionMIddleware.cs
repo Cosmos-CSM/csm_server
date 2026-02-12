@@ -6,6 +6,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace CSM_Server_Core.Middlewares;
 
+/// <summary>
+///     Represents a middleware responsible for wipe out quality and testing data.
+/// </summary>
 public class DispositionMiddleware
     : IMiddleware {
 
@@ -14,10 +17,17 @@ public class DispositionMiddleware
 
     readonly IServerDisposer _disposer;
 
+    /// <summary>
+    ///     Creates a new intsance.
+    /// </summary>
+    /// <param name="disposer">
+    ///     Server disposer handler.
+    /// </param>
     public DispositionMiddleware(IServerDisposer disposer) {
         _disposer = disposer;
     }
 
+    /// <inheritdoc/>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next) {
         HttpRequest request = context.Request;
 

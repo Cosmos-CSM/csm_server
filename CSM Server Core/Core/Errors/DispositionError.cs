@@ -17,7 +17,7 @@ public enum XDispositionSituations {
 }
 
 /// <summary>
-///     {exception} class from <see cref="BException{XDispositionSituation}"/>.
+///     {exception} class from <see cref="ServerErrorBase{TEvents}"/>.
 ///     
 ///     <para>
 ///         Defines an exception object thrown at {Disposition} data process. 
@@ -35,6 +35,7 @@ public class DispositionError
         : base($"Data disposition process exception", situation) {
     }
 
+    /// <inheritdoc/>
     protected override Dictionary<XDispositionSituations, string> BuildAdviseContext() {
 
         return new Dictionary<XDispositionSituations, string> {

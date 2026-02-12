@@ -27,6 +27,7 @@ public class ActionAttribute
         Action = actionName;
     }
 
+    /// <inheritdoc/>
     public void OnAuthorization(AuthorizationFilterContext context) {
         HttpContext reqContext = context.HttpContext;
 

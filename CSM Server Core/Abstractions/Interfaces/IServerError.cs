@@ -26,6 +26,9 @@ public interface IServerError
     /// </summary>
     public HttpStatusCode Status { get; }
 
+    /// <summary>
+    ///     .Net Framework native exception data.
+    /// </summary>
     [JsonIgnore]
     public new Exception? Exception { get; }
 }

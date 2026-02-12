@@ -17,11 +17,15 @@ namespace CSM_Server_Core_Testing.Abstractions.Bases;
 /// <typeparam name="TEntity">
 ///     Type of the <see cref="IEntity"/> that the <typeparamref name="TService"/> handles.
 /// </typeparam>
+/// <typeparam name="TDepot">
+///     Type of the <see cref="IDepot{TEntity}"/> that the <typeparamref name="TService"/> uses as main depot.
+/// </typeparam>
 /// <typeparam name="TService">
 ///     Type of the service class to be tested.
 /// </typeparam>
-public abstract class ServiceUnitTestsBase<TEntity, TService>
-    where TService : ServiceBase<TEntity, IDepot<TEntity>>
+public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
+    where TDepot : class, IDepot<TEntity>
+    where TService : ServiceBase<TEntity, TDepot>
     where TEntity : class, IEntity, new() {
 
     /// <summary>
@@ -32,10 +36,10 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
     ///     A <typeparamref name="TService"/> instance using the given <paramref name="depotMock"/>.
     /// </returns>
     /// <remarks>
-    ///     This is only used by <see cref="ServiceUnitTestsBase{TEntity, TService}"/> to test <see cref="ServiceBase{TEntity, TDepot}"/> methods,
+    ///     This is only used by <see cref="ServiceUnitTestsBase{TEntity, TDepot, TService}"/> to test <see cref="ServiceBase{TEntity, TDepot}"/> methods,
     ///     if one of this base methods got overriden, the unit test must be overriden.
     /// </remarks>
-    protected abstract TService ServiceFactory(IDepot<TEntity> depotMock);
+    protected abstract TService ServiceFactory(TDepot depotMock);
 
     /// <summary>
     ///     Tests that the method <see cref="IServiceView{TEntity}.View( ViewInput{TEntity})"/> correctly generates a View object.
@@ -51,7 +55,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         };
 
         // --> Mocking setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -101,7 +105,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
 
 
         // --> Mocking setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -149,7 +153,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
 
 
         // --> Mocking setup.
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -215,7 +219,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
 
 
         // --> Mocking setup.
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -278,7 +282,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         };
 
         // --> Mockin setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
         depotMock.Setup(
                 obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
@@ -327,7 +331,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         };
 
         // --> Mockin setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
         depotMock.Setup(
                 obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
@@ -376,7 +380,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         };
 
         // --> Mocking setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -420,7 +424,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         };
 
         // --> Mocking setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -459,7 +463,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
         long[] idsToRemove = [1, 2, 3];
 
         // --> Mocking setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(
@@ -535,7 +539,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TService>
             ];
 
         // --> Mocking setup
-        Mock<IDepot<TEntity>> depotMock = new();
+        Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
 
         depotMock.Setup(

@@ -8,7 +8,9 @@ namespace CSM_Server_Core.Core.Models.Frames;
 public class FailureFrame
     : IResponseSchema<Dictionary<string, object?>> {
 
+    /// <inheritdoc/>
     public required Guid Id { get; init; }
 
+    /// <inheritdoc/>
     public required Dictionary<string, object?> Content { get; init; }
 }

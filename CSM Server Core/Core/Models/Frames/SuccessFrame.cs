@@ -11,7 +11,9 @@ namespace CSM_Server_Core.Core.Models.Frames;
 public class SuccessFrame<TSuccess>
     : IResponseSchema<TSuccess> {
 
+    /// <inheritdoc/>
     public required Guid Id { get; init; }
 
+    /// <inheritdoc/>
     public required TSuccess Content { get; init; }
 }

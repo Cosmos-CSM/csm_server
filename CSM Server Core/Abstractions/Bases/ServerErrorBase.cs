@@ -17,12 +17,18 @@ public class ServerErrorBase<TEvents>
     : ErrorBase<TEvents>, IServerError<TEvents>
     where TEvents : Enum {
 
+    /// <summary>
+    ///     CSM Framework error data.
+    /// </summary>
     public IError? Error { get; }
 
+    /// <summary>
+    ///     HTTP standard status code.
+    /// </summary>
     public HttpStatusCode Status { get; }
 
     object IServerError.Event { get => Convert.ToInt32(Event); }
-    
+
 
     /// <summary>
     ///     Creates a new instance.
@@ -32,6 +38,9 @@ public class ServerErrorBase<TEvents>
     /// </param>
     /// <param name="event">
     ///     Error event trigger.
+    /// </param>
+    /// <param name="error">
+    ///     CSM Framework eror data.
     /// </param>
     /// <param name="exception">
     ///     System exception caught.

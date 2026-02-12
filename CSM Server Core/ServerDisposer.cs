@@ -43,6 +43,7 @@ public class ServerDisposer
         _serviceProvider = serviceProvider;
     }
 
+    /// <inheritdoc/>
     public void Push(IEntity entity) {
         if (!_isActive) {
             return;
@@ -51,7 +52,7 @@ public class ServerDisposer
         _dispositionStack.AddOrUpdate(
                 entity.Database.GetType(),
                 [entity],
-                (Type _, List<IEntity> previousList) => {
+                (_, previousList) => {
                     lock (previousList) {
                         previousList.Add(entity);
                     }
@@ -61,6 +62,7 @@ public class ServerDisposer
             );
     }
 
+    /// <inheritdoc/>
     public void Push(IEntity[] entities) {
         if (!_isActive) {
             return;
@@ -75,7 +77,7 @@ public class ServerDisposer
             _dispositionStack.AddOrUpdate(
                     databaseEntitiesGroup.Key,
                     [.. databaseEntitiesGroup],
-                    (Type _, List<IEntity> previousList) => {
+                    (_, previousList) => {
                         lock (previousList) {
                             previousList.AddRange(databaseEntitiesGroup);
                         }
@@ -86,10 +88,12 @@ public class ServerDisposer
         }
     }
 
+    /// <inheritdoc/>
     public void ChangeState(bool active) {
         _isActive = active;
     }
 
+    /// <inheritdoc/>
     public void Dispose() {
         if (_dispositionStack.Empty()) {
             ConsoleUtils.Announce($"No records to dispose");
