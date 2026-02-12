@@ -110,7 +110,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
 
         depotMock.Setup(
                 obj => obj.Create(It.IsAny<TEntity>())
-            ).Callback(
+            ).Returns(
                 async (TEntity entity) => {
                     return entity;
                 }
@@ -295,7 +295,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         };
                     }
 
-                    return null;
+                    throw new Exception("Unexpected input create property");
                 }
             );
 
