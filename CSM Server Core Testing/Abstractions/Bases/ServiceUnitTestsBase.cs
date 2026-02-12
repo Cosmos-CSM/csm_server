@@ -111,7 +111,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
         depotMock.Setup(
                 obj => obj.Create(It.IsAny<TEntity>())
             ).Callback(
-                (TEntity entity) => {
+                async (TEntity entity) => {
                     return entity;
                 }
             );
@@ -161,8 +161,8 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         It.IsAny<TEntity[]>(),
                         It.Is<bool>(true, EqualityComparer<bool>.Default)
                     )
-            ).Callback(
-                (TEntity[] createdEntities, bool sync) => {
+            ).Returns(
+                async (TEntity[] createdEntities, bool sync) => {
                     return new BatchOperationOutput<TEntity>(createdEntities, []);
                 }
             );
@@ -227,8 +227,8 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         It.IsAny<TEntity[]>(),
                         It.Is<bool>(false, EqualityComparer<bool>.Default)
                     )
-            ).Callback(
-                (TEntity[] createdEntities, bool sync) => {
+            ).Returns(
+                async (TEntity[] createdEntities, bool sync) => {
                     return new BatchOperationOutput<TEntity>(createdEntities, []);
                 }
             );
@@ -286,8 +286,8 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
         TService service = ServiceFactory(depotMock.Object);
         depotMock.Setup(
                 obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
-            ).Callback(
-                (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
+            ).Returns(
+                async (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
                     if (input.Parameters.Create) {
                         return new UpdateOutput<TEntity> {
                             Original = null,
@@ -336,7 +336,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
         depotMock.Setup(
                 obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
             ).Returns(
-                (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
+                async (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
                     if (!input.Parameters.Create) {
                         return new UpdateOutput<TEntity> {
                             Original = new TEntity {
@@ -388,7 +388,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         It.Is<long>(id => id == expectation.Id)
                     )
             ).Returns(
-                () => {
+                async () => {
                     return expectation;
                 }
             );
@@ -432,7 +432,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         It.IsAny<TEntity>()
                     )
             ).Returns(
-                () => {
+                async () => {
                     return expectation;
                 }
             );
@@ -471,7 +471,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         It.IsAny<long[]>()
                     )
             ).Returns(
-                (long[] ids) => {
+                async (long[] ids) => {
                     return new BatchOperationOutput<TEntity>(
                             [
                                 ..ids.Select(
@@ -547,7 +547,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                         It.IsAny<TEntity[]>()
                     )
             ).Returns(
-                (TEntity[] entities) => {
+                async (TEntity[] entities) => {
                     return new BatchOperationOutput<TEntity>(
                             entities,
                             []

@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<RootNamespace>CSM_Server_Core_Testing</RootNamespace>
 		<PackageId>CSM.Server.Core.Testing</PackageId>
-		<Version>1.0.4-alpha</Version>
+		<Version>1.0.5-alpha</Version>
 		<Authors>Renato Urrea</Authors>
 		<Company>Cosmos (CSM)</Company>
 		<RepositoryUrl>https://github.com/Cosmos-CSM/csm_server</RepositoryUrl>
