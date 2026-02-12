@@ -62,9 +62,9 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                 obj => obj.View(It.IsAny<QueryInput<TEntity, ViewInput<TEntity>>>())
             )
             .Returns(
-                async (QueryInput<IEntity, ViewInput<TEntity>> input) => {
+                async (QueryInput<TEntity, ViewInput<TEntity>> input) => {
 
-                    return new ViewOutput<IEntity> {
+                    return new ViewOutput<TEntity> {
                         Count = input.Parameters.Range,
                         Page = input.Parameters.Page,
                         Pages = 1,
