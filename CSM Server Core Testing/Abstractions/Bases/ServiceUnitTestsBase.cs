@@ -206,34 +206,39 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
     }
 
     /// <summary>
-    ///     Tests that the method <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> correctly updates the given entities when create enabled.
+    ///     Tests that the method <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> correctly updates an entity from the given input, both when the input is for creating and for updating.
     /// </summary>
-    [Fact]
-    public virtual async Task Update_UpdatesEntity_Create() {
+    /// <param name="isToCreate">
+    ///     Whether the operation context should create entities if they aren´t found.
+    /// </param>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public virtual async Task Update_UpdateFromInput(bool isToCreate) {
         // --> Expectation
         UpdateInput<TEntity> expectation = new() {
             Entity = new TEntity {
                 Id = 1,
                 Timestamp = DateTime.UtcNow,
             },
-            Create = true
+            Create = isToCreate
         };
 
         // --> Mockin setup
         Mock<TDepot> depotMock = new();
         TService service = ServiceFactory(depotMock.Object);
         depotMock.Setup(
-                obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
+                obj => obj.Update(
+                        It.Is<QueryInput<TEntity, UpdateInput<TEntity>>>(
+                                input => input.Parameters.Create == isToCreate
+                            )
+                    )
             ).Returns(
                 async (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
-                    if (input.Parameters.Create) {
-                        return new UpdateOutput<TEntity> {
-                            Original = null,
-                            Updated = input.Parameters.Entity,
-                        };
-                    }
-
-                    throw new Exception("Unexpected input create property");
+                    return new UpdateOutput<TEntity> {
+                        Original = null,
+                        Updated = input.Parameters.Entity,
+                    };
                 }
             );
 
@@ -249,59 +254,11 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
                 ]
             );
         depotMock.Verify(
-                obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>()),
-                Times.Once()
-            );
-    }
-
-    /// <summary>
-    ///     Tests that the method <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> correctly updates the given entities when create disabled.
-    /// </summary>
-    [Fact]
-    public virtual async Task Update_UpdatesEntity_NotCreate() {
-        // --> Expectation
-        UpdateInput<TEntity> expectation = new() {
-            Entity = new TEntity {
-                Id = 1,
-                Timestamp = DateTime.UtcNow,
-            },
-            Create = false
-        };
-
-        // --> Mockin setup
-        Mock<TDepot> depotMock = new();
-        TService service = ServiceFactory(depotMock.Object);
-        depotMock.Setup(
-                obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>())
-            ).Returns(
-                async (QueryInput<TEntity, UpdateInput<TEntity>> input) => {
-                    if (!input.Parameters.Create) {
-                        return new UpdateOutput<TEntity> {
-                            Original = new TEntity {
-                                Id = 1,
-                                Timestamp = DateTime.UtcNow.AddDays(-10),
-                            },
-                            Updated = input.Parameters.Entity,
-                        };
-                    }
-
-                    throw new Exception("Expected update operation for not creation.");
-                }
-            );
-
-        // --> Executing.
-        UpdateOutput<TEntity> output = await service.Update(expectation);
-
-        // --> Asserting.
-        Assert.NotNull(output.Original);
-        Assert.Multiple(
-                [
-                    () => Assert.Equal(expectation.Entity.Id, output.Updated.Id),
-                    () => Assert.Equal(expectation.Entity.Timestamp, output.Updated.Timestamp),
-                ]
-            );
-        depotMock.Verify(
-                obj => obj.Update(It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>()),
+                obj => obj.Update(
+                        It.Is<QueryInput<TEntity, UpdateInput<TEntity>>>(
+                                input => input.Parameters.Create == isToCreate
+                            )
+                    ),
                 Times.Once()
             );
     }

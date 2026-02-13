@@ -1,5 +1,18 @@
 ﻿# CSM Server Core Testing CHANGELOG
 
+## [4.0.0] - 13.02-2026
+
+### Changes
+
+- Removed the method [Update_UpdatesEntity_Create] and [Update_UpdatesEntity_NotCreate] for [Update_UpdateFromInput] using [InlineData] technique.
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| Moq				                      | -.-.-            | 4.20.72         |
+| xunit.v3			                      | -.-.-            | 3.2.2           |
+
 ## [3.0.0] - 13.02-2026
 
 ### Changes
