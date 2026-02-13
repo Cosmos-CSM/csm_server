@@ -135,10 +135,15 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
     }
 
     /// <summary>
-    ///     Tests that the method <see cref="IServiceCreate{TEntity}.Create(TEntity[], bool)"/> correctly creates a synchronously multiple entities
+    ///     Tests that the method <see cref="IServiceCreate{TEntity}.Create(TEntity[], bool)"/> correctly creates entities when they are synced and when isn´t.
     /// </summary>
-    [Fact]
-    public virtual async Task Create_MultipleEntitiesCreated_Sync() {
+    /// <param name="sync">
+    ///     Whether the operation context is for synched or not.
+    /// </param>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public virtual async Task Create_BatchEntityCreation(bool sync) {
         // --> Expectations.
         TEntity[] expectedEntities = [
                 new TEntity {
@@ -159,7 +164,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
         depotMock.Setup(
                 obj => obj.Create(
                         It.IsAny<TEntity[]>(),
-                        It.Is<bool>(true, EqualityComparer<bool>.Default)
+                        It.Is<bool>(sync, EqualityComparer<bool>.Default)
                     )
             ).Returns(
                 async (TEntity[] createdEntities, bool sync) => {
@@ -168,7 +173,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
             );
 
         // --> Executing.
-        BatchOperationOutput<TEntity> output = await service.Create(expectedEntities, true);
+        BatchOperationOutput<TEntity> output = await service.Create(expectedEntities, sync);
 
         // --> Asserting.
         Assert.False(output.Failed);
@@ -194,74 +199,7 @@ public abstract class ServiceUnitTestsBase<TEntity, TDepot, TService>
         depotMock.Verify(
                 obj => obj.Create(
                         It.IsAny<TEntity[]>(),
-                        It.Is<bool>(true, EqualityComparer<bool>.Default)
-                    ),
-                Times.Once()
-            );
-    }
-
-    /// <summary>
-    ///     Tests that the method <see cref="IServiceCreate{TEntity}.Create(TEntity[], bool)"/> correctly creates a not synchronously multiple entities
-    /// </summary>
-    [Fact]
-    public virtual async Task Create_MultipleEntitiesCreated_NotSync() {
-        // --> Expectations.
-        TEntity[] expectedEntities = [
-                new TEntity {
-                        Id = 1,
-                        Timestamp = DateTime.UtcNow,
-                    },
-                new TEntity {
-                        Id = 2,
-                        Timestamp = DateTime.UtcNow,
-                    },
-            ];
-
-
-        // --> Mocking setup.
-        Mock<TDepot> depotMock = new();
-        TService service = ServiceFactory(depotMock.Object);
-
-        depotMock.Setup(
-                obj => obj.Create(
-                        It.IsAny<TEntity[]>(),
-                        It.Is<bool>(false, EqualityComparer<bool>.Default)
-                    )
-            ).Returns(
-                async (TEntity[] createdEntities, bool sync) => {
-                    return new BatchOperationOutput<TEntity>(createdEntities, []);
-                }
-            );
-
-        // --> Executing.
-        BatchOperationOutput<TEntity> output = await service.Create(expectedEntities, false);
-
-        // --> Asserting.
-
-        Assert.False(output.Failed);
-        Assert.Empty(output.Failures);
-        Assert.Equal(0, output.FailuresCount);
-        Assert.NotEmpty(output.Successes);
-        Assert.Equal(expectedEntities.Length, output.SuccessesCount);
-        Assert.Equal(expectedEntities.Length, output.OperationsCount);
-        Assert.All(
-                output.Successes,
-                (createdEntity, index) => {
-
-                    TEntity expectedEntity = expectedEntities[index];
-
-                    Assert.Multiple(
-                            [
-                                () => Assert.Equal(expectedEntity.Id, createdEntity.Id),
-                                () => Assert.Equal(expectedEntity.Timestamp, createdEntity.Timestamp),
-                            ]
-                        );
-                }
-            );
-        depotMock.Verify(
-                obj => obj.Create(
-                        It.IsAny<TEntity[]>(),
-                        It.Is<bool>(false, EqualityComparer<bool>.Default)
+                        It.Is(sync, EqualityComparer<bool>.Default)
                     ),
                 Times.Once()
             );
