@@ -1,5 +1,17 @@
 ﻿# CSM Server Core CHANGELOG
 
+## [2.1.9] - 13.02-2026
+
+### Patched
+
+- Parched [CSM.Foundation.Core] package to get an important fix for error handling.
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| CSM.Foundation.Core                     | 2.1.1            | 2.2.3           |
+
 ## [2.0.0] - 25.12-2025
 
 ### Changed
