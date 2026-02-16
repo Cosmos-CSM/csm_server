@@ -1,11 +1,15 @@
 ﻿using CSM_Database_Core.Depots.Models;
+using CSM_Database_Core.Depots.ViewFilters;
 using CSM_Database_Core.Entities.Abstractions.Interfaces;
+
+using CSM_Foundation_Core.Core.Utils;
 
 using CSM_Server_Core.Abstractions.Interfaces;
 
 using CSM_Server_Core_Testing.Disposition.Abstractions.Bases;
 
 using Xunit;
+using Xunit.Sdk;
 
 namespace CSM_Server_Core_Testing.Abstractions.Bases;
 
@@ -71,7 +75,7 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
     protected abstract TEntity DraftEntity(string entropy);
 
     /// <summary>
-    ///     Tests that <see cref="IServiceView{TEntity}.View(ViewInput{TEntity})"/> composes an entty view.
+    ///     Tests that <see cref="IServiceView{TEntity}.View(ViewInput{TEntity})"/> composes an entity view.
     /// </summary>
     [Fact]
     public virtual async Task View_ComposesEntityView() {
@@ -93,6 +97,66 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
                 () => Assert.Equal(1, viewOutput.Page),
                 () => Assert.Equal(viewOutput.Length, viewOutput.Entities.Length)
             );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceView{TEntity}.View(ViewInput{TEntity})"/> composes an entity view filtered by a key name contains.
+    /// </summary>
+    [Fact]
+    public virtual async Task View_ComposeEntityView_NameFilteredView() {
+
+        if (!typeof(TEntity).IsAssignableTo(typeof(INamedEntity))) {
+            throw SkipException.ForSkip("Test only supported for Named Entities.");
+        }
+
+        // Expectation
+        string testKey = RandomUtils.String(8);
+
+        // Sampling
+        List<TEntity> entities = [];
+        for (int i = 0; i <= 20; i++) {
+            INamedEntity entity = (INamedEntity)RunEntityFactory(DraftEntity);
+            entity.Name = $"{entity.Name}_{testKey}";
+
+            entities.Add((TEntity)entity);
+        }
+        TEntity[] storedEntities = await Store([.. entities]);
+
+        // Executing
+        ViewOutput<TEntity> output = await _service.View(
+                new ViewInput<TEntity> {
+                    Retroactive = true,
+                    Range = 20,
+                    Page = 1,
+                    Filters = [
+                            new ViewFilterProperty<TEntity> {
+                                    Operator = ViewFilterOperators.CONTAINS,
+                                    Property = nameof(INamedEntity.Name),
+                                    Value = testKey
+                                }
+                        ]
+                }
+            );
+
+        // Asserting
+        Assert.Equal(20, output.Length);
+        Assert.All(
+                output.Entities,
+                entity => {
+
+                    INamedEntity namedEntity = (INamedEntity)entity;
+                    Assert.Multiple(
+                            [
+                                () => Assert.Contains(testKey, namedEntity.Name),
+                                () => Assert.Contains(
+                                            storedEntities,
+                                               (storedEntity) => ((INamedEntity)storedEntity).Name == namedEntity.Name
+                                        ),
+                            ]
+                        );
+                }
+            );
+
     }
 
     /// <summary>
