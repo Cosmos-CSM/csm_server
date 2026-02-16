@@ -71,7 +71,7 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
     protected abstract TEntity DraftEntity(string entropy);
 
     /// <summary>
-    ///     Tests that <see cref="IServiceView{TEntity}.View(CSM_Database_Core.Depots.Models.ViewInput{TEntity})"/> composes an entty view.
+    ///     Tests that <see cref="IServiceView{TEntity}.View(ViewInput{TEntity})"/> composes an entty view.
     /// </summary>
     [Fact]
     public virtual async Task View_ComposesEntityView() {

@@ -115,6 +115,38 @@ public class DataHandlerTestsBase
     }
 
     /// <summary>
+    ///     Stores the given <paramref name="entities"/> into the database.
+    /// </summary>
+    /// <typeparam name="TEntity2">
+    ///     Type of the [Entity] to store.
+    /// </typeparam>
+    /// <param name="entities">
+    ///     Entity collection to store as testing data.
+    /// </param>
+    /// <returns>
+    ///     Stored entities data.
+    /// </returns>
+    protected async Task<TEntity2[]> Store<TEntity2>(TEntity2[] entities)
+        where TEntity2 : class, IEntity {
+
+        using DbContext database = GetDatabase(entities.First().Database);
+        List<TEntity2> toSaveEntities = [];
+
+        for (int i = 0; i < entities.Length; i++) {
+
+            TEntity2 entity = entities[i];
+            entity = DatabaseUtils.SanitizeEntity(database, entity);
+            toSaveEntities.Add(entity);
+        }
+
+        await database.Set<TEntity2>().AddRangeAsync(toSaveEntities);
+        await database.SaveChangesAsync();
+        Disposer.Push([.. toSaveEntities]);
+
+        return [.. toSaveEntities];
+    }
+
+    /// <summary>
     ///     Stores the [Entity] resulted by the <paramref name="entityFactory"/>.
     /// </summary>
     /// <typeparam name="TEntity2">
