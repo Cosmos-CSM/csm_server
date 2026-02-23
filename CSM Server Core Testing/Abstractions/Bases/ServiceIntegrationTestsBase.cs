@@ -115,7 +115,7 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
         // Sampling
         List<TEntity> entities = [];
         for (int i = 0; i <= 20; i++) {
-            INamedEntity entity = (INamedEntity)RunEntityFactory(DraftEntity);
+            INamedEntity entity = (INamedEntity)RunEntityDraft(DraftEntity);
             entity.Name = $"{entity.Name}_{testKey}";
 
             entities.Add((TEntity)entity);
@@ -160,11 +160,41 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
     }
 
     /// <summary>
+    ///     Tests that <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> creates entity when it doesn´t exist and is enabled.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public virtual async Task Update_SingleEntity_CreatesEntity() {
+        // Expectation
+        TEntity entity = RunEntityDraft(DraftEntity);
+
+        // Executing
+        UpdateOutput<TEntity> output = await _service.Update(
+                new UpdateInput<TEntity> {
+                    Create = true,
+                    Entity = entity,
+                }
+            );
+
+        // Assert
+        Assert.Null(output.Original);
+        Assert.NotNull(output.Updated);
+        Assert.Equal(entity.Id, output.Updated.Id);
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> updates correctly an entity when it already exist.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public abstract Task Update_SingleEntity_UpdatesEntity();
+
+    /// <summary>
     ///     Tests that <see cref="IServiceCreate{TEntity}.Create(TEntity)"/> successfuly creates a single entity.
     /// </summary>
     [Fact]
-    public async Task Create_SingleEntity() {
-        TEntity sampleEntity = RunEntityFactory(DraftEntity);
+    public virtual async Task Create_SingleEntity() {
+        TEntity sampleEntity = RunEntityDraft(DraftEntity);
         TEntity createdEntity = await _service.Create(sampleEntity);
 
         Assert.True(
@@ -172,4 +202,50 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
                 $"Created entity Id must be greater than 0"
             );
     }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceCreate{TEntity}.Create(TEntity[], bool)"/> sucessfuly creates a batch of entities.
+    /// </summary>
+    [Fact]
+    public virtual async Task Create_BatchCreation_CreatesEntities() {
+        // Expectation
+        TEntity[] expEntities = [
+                RunEntityDraft(DraftEntity),
+                RunEntityDraft(DraftEntity),
+            ];
+
+        // Executing
+        BatchOperationOutput<TEntity> output = await _service.Create(expEntities);
+
+        // Asserting
+        Assert.NotNull(output);
+        Assert.Empty(output.Failures);
+        Assert.NotEmpty(output.Successes);
+        Assert.Equal(expEntities.Length, output.Successes.Length);
+
+        Assert.All(
+                output.Successes,
+                (TEntity resEntity, int index) => {
+                    TEntity expEntity = expEntities[index];
+
+                    Action[] checks = [
+                            () => Assert.Equal(expEntity.Id, resEntity.Id),
+                            () => Assert.Equal(expEntity.Timestamp, resEntity.Timestamp),
+                        ];
+
+                    if (typeof(TEntity).IsAssignableTo(typeof(INamedEntity))) {
+                        INamedEntity expEntityNamed = (INamedEntity)expEntity;
+                        INamedEntity resEntityNamed = (INamedEntity)resEntity;
+
+                        checks = [
+                                ..checks,
+                                () => Assert.Equal(expEntityNamed.Name, resEntityNamed.Name),
+                                () => Assert.Equal(expEntityNamed.Description, resEntityNamed.Description),
+                            ];
+                    }
+                }
+            );
+    }
+
+
 }

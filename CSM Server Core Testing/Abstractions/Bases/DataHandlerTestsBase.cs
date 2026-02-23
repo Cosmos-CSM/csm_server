@@ -79,7 +79,7 @@ public class DataHandlerTestsBase
     /// <returns>
     ///     The generated [Entity] object.
     /// </returns>
-    protected static TEntity2 RunEntityFactory<TEntity2>(EntityFactory<TEntity2> factory)
+    protected static TEntity2 RunEntityDraft<TEntity2>(EntityFactory<TEntity2> factory)
         where TEntity2 : class, IEntity {
 
         return factory(RandomUtils.String(16));
@@ -161,7 +161,7 @@ public class DataHandlerTestsBase
     protected TEntity2 Store<TEntity2>(EntityFactory<TEntity2> entityFactory)
         where TEntity2 : class, IEntity {
 
-        TEntity2 toStore = RunEntityFactory(entityFactory);
+        TEntity2 toStore = RunEntityDraft(entityFactory);
         toStore = Store(toStore);
 
         return toStore;
@@ -187,10 +187,10 @@ public class DataHandlerTestsBase
 
         List<TEntity2> entities = [];
 
-        using DbContext database = GetDatabase(RunEntityFactory(entityFactory).Database);
+        using DbContext database = GetDatabase(RunEntityDraft(entityFactory).Database);
         for (int i = 0; i < quantity; i++) {
 
-            TEntity2 entity = RunEntityFactory(entityFactory);
+            TEntity2 entity = RunEntityDraft(entityFactory);
             entity = DatabaseUtils.SanitizeEntity(database, entity);
             entities.Add(entity);
         }
@@ -268,6 +268,35 @@ public class DataHandlerTestsBase
             }
         }
 
+    }
+
+    #endregion
+
+    #region Reading
+
+    /// <summary>
+    ///     Reads the given <paramref name="id"/> from the database to get the <typeparamref name="TEntity"/> object.
+    /// </summary>
+    /// <typeparam name="TEntity">
+    ///     Type of the entity to read.
+    /// </typeparam>
+    /// <param name="id">
+    ///     Unique entity identifier.
+    /// </param>
+    /// <returns>
+    ///     Entity object if exist, otherwise null.
+    /// </returns>
+    protected TEntity? Read<TEntity>(long id) 
+        where TEntity : class, IEntity, new() {
+        TEntity entityRef = new();
+
+        DbContext database = GetDatabase(entityRef.Database);
+        return database
+            .Set<TEntity>()
+            .AsNoTracking()
+            .FirstOrDefault(
+                (entity) => entity.Id == id
+            );
     }
 
     #endregion
