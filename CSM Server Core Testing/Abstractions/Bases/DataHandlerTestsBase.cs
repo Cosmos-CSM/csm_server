@@ -85,7 +85,6 @@ public class DataHandlerTestsBase
         return factory(RandomUtils.String(16));
     }
 
-
     #region Storing
 
     /// <summary>

@@ -56,11 +56,25 @@ public abstract class ServiceIntegrationTestsBase<TService>
 public abstract class ServiceIntegrationTestsBase<TService, TEntity>
     : ServiceIntegrationTestsBase<TService>
     where TService : IService<TEntity>
-    where TEntity : class, IEntity {
+    where TEntity : class, IEntity, new() {
 
     /// <inheritdoc/>
     public ServiceIntegrationTestsBase(params DatabaseFactory[] databaseFactories)
         : base(databaseFactories) {
+    }
+
+
+    /// <summary>
+    ///     Runs <see cref="DraftEntity(string)"/> giving a random entropy value.
+    /// </summary>
+    /// <returns>
+    ///     A drafter <typeparamref name="TEntity"/> object.
+    /// </returns>
+    protected TEntity RunEntityDraft() {
+
+        return RunEntityDraft(
+                DraftEntity
+            );
     }
 
     /// <summary>
@@ -247,5 +261,53 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
             );
     }
 
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(long)"/> sucessfuly deletes an entity by its Id.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_SinleEntity_DeletingById() {
+        // Expectation
+        TEntity expEntity = Store(RunEntityDraft());
 
+        // Executing
+        TEntity resEntity = await _service.Delete(expEntity.Id);
+
+
+        // Asserting
+        Assert.Null(
+                Read<TEntity>(expEntity.Id)
+            );
+        Assert.NotNull(resEntity);
+        Assert.Multiple(
+                [
+                    () => Assert.Equal(expEntity.Id, resEntity.Id),
+                    () => Assert.Equal(expEntity.Timestamp, resEntity.Timestamp),
+                ]
+            );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(TEntity)"/> sucessfuly deletes an entity by itself.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_SinleEntity_DeletingByEntity() {
+        // Expectation
+        TEntity expEntity = Store(RunEntityDraft());
+
+        // Executing
+        TEntity resEntity = await _service.Delete(expEntity);
+
+
+        // Asserting
+        Assert.Null(
+                Read<TEntity>(expEntity.Id)
+            );
+        Assert.NotNull(resEntity);
+        Assert.Multiple(
+                [
+                    () => Assert.Equal(expEntity.Id, resEntity.Id),
+                    () => Assert.Equal(expEntity.Timestamp, resEntity.Timestamp),
+                ]
+            );
+    }
 }
