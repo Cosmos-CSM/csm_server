@@ -310,4 +310,62 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
                 ]
             );
     }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(long[])"/> deletes a batch of entities by their ids.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public virtual async Task Delete_BatchDelete_DeletingByIds() {
+        // Expectation
+        TEntity[] expEntities = await Store(
+                2,
+                (_) => RunEntityDraft()
+            );
+
+        // Executing
+        BatchOperationOutput<TEntity> exeOutput = await _service.Delete(
+                expEntities.Select(
+                        expEntity => expEntity.Id
+                    )
+                    .ToArray()
+            );
+
+        // Asserting
+        Assert.False(exeOutput.Failed);
+        Assert.Empty(exeOutput.Failures);
+        Assert.Equal(expEntities.Length, exeOutput.OperationsCount);
+        Assert.Equal(expEntities.Length, exeOutput.SuccessesCount);
+        Assert.All(
+                expEntities,
+                (entity) => Assert.Contains(exeOutput.Successes, outputEntity => outputEntity.Id == entity.Id)
+            );
+    }
+
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(long[])"/> deletes a batch of entities by entities objects.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public virtual async Task Delete_BatchDelete_DeletingByEntities() {
+        // Expectation
+        TEntity[] expEntities = await Store(
+                2,
+                (_) => RunEntityDraft()
+            );
+
+        // Executing
+        BatchOperationOutput<TEntity> exeOutput = await _service.Delete(expEntities);
+
+        // Asserting
+        Assert.False(exeOutput.Failed);
+        Assert.Empty(exeOutput.Failures);
+        Assert.Equal(expEntities.Length, exeOutput.OperationsCount);
+        Assert.Equal(expEntities.Length, exeOutput.SuccessesCount);
+        Assert.All(
+                expEntities,
+                (entity) => Assert.Contains(exeOutput.Successes, outputEntity => outputEntity.Id == entity.Id)
+            );
+    }
 }
