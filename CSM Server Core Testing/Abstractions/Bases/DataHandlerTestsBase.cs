@@ -99,12 +99,12 @@ public class DataHandlerTestsBase
     /// <returns>
     ///     The stored and updated [Entity] object values. 
     /// </returns>
-    protected TEntity2 Store<TEntity2>(TEntity2 entity)
+    protected async Task<TEntity2> Store<TEntity2>(TEntity2 entity)
         where TEntity2 : class, IEntity {
 
         DbContext database = GetDatabase(entity.Database);
 
-        entity = DatabaseUtils.SanitizeEntity(database, entity);
+        entity = await DatabaseUtils.SanitizeEntity(database, entity);
         database.Set<TEntity2>().Add(entity);
         database.SaveChanges();
 
@@ -134,7 +134,7 @@ public class DataHandlerTestsBase
         for (int i = 0; i < entities.Length; i++) {
 
             TEntity2 entity = entities[i];
-            entity = DatabaseUtils.SanitizeEntity(database, entity);
+            entity = await DatabaseUtils.SanitizeEntity(database, entity);
             toSaveEntities.Add(entity);
         }
 
@@ -157,11 +157,11 @@ public class DataHandlerTestsBase
     /// <returns>
     ///     The stored and updated [Entity] object. 
     /// </returns>
-    protected TEntity2 Store<TEntity2>(EntityFactory<TEntity2> entityFactory)
+    protected async Task<TEntity2> Store<TEntity2>(EntityFactory<TEntity2> entityFactory)
         where TEntity2 : class, IEntity {
 
         TEntity2 toStore = RunEntityDraft(entityFactory);
-        toStore = Store(toStore);
+        toStore = await Store(toStore);
 
         return toStore;
     }
@@ -190,7 +190,7 @@ public class DataHandlerTestsBase
         for (int i = 0; i < quantity; i++) {
 
             TEntity2 entity = RunEntityDraft(entityFactory);
-            entity = DatabaseUtils.SanitizeEntity(database, entity);
+            entity = await DatabaseUtils.SanitizeEntity(database, entity);
             entities.Add(entity);
         }
 

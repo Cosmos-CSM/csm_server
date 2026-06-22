@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 
-using CSM_Foundation_Core.Core.Exceptions;
+using CSM_Foundation_Core.Core.Errors;
 using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
 using CSM_Server_Core.Abstractions.Interfaces;

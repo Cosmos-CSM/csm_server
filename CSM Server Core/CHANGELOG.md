@@ -1,5 +1,18 @@
 ﻿# CSM Server Core CHANGELOG
 
+## [2.2.0] - 22.06-2026
+
+### Changes
+
+- Updated packages [CSM.Database.Core] and [CSM.Foundation.Core].
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| CSM.Database.Core                       | -.-.-            | 6.0.6           |
+| CSM.Foundation.Core                     | 2.2.3            | 4.0.0           |
+
 ## [2.1.9] - 13.02-2026
 
 ### Patched

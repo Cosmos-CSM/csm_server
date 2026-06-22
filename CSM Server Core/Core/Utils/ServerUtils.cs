@@ -5,7 +5,7 @@ using System.Text.Json;
 using CSM_Database_Core.Entities.Abstractions.Interfaces;
 
 using CSM_Foundation_Core.Abstractions.Interfaces;
-using CSM_Foundation_Core.Core.Exceptions;
+using CSM_Foundation_Core.Core.Errors;
 using CSM_Foundation_Core.Core.Utils;
 using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
@@ -231,7 +231,7 @@ public static class ServerUtils {
             throw new ArgumentNullException(filePath);
 
         string host = GetHost();
-        string formattedPath = FileUtils.FormatLocation(filePath);
+        string formattedPath = FileUtils.FormatPath(filePath);
         string[] listeners = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.Split(";") ?? [];
 
 

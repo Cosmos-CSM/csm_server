@@ -267,7 +267,7 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
     [Fact]
     public virtual async Task Delete_SinleEntity_DeletingById() {
         // Expectation
-        TEntity expEntity = Store(RunEntityDraft());
+        TEntity expEntity = await Store(RunEntityDraft());
 
         // Executing
         TEntity resEntity = await _service.Delete(expEntity.Id);
@@ -292,7 +292,7 @@ public abstract class ServiceIntegrationTestsBase<TService, TEntity>
     [Fact]
     public virtual async Task Delete_SinleEntity_DeletingByEntity() {
         // Expectation
-        TEntity expEntity = Store(RunEntityDraft());
+        TEntity expEntity = await Store(RunEntityDraft());
 
         // Executing
         TEntity resEntity = await _service.Delete(expEntity);
