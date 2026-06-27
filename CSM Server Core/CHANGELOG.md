@@ -1,5 +1,11 @@
 ﻿# CSM Server Core CHANGELOG
 
+## [2.0.0](rc) - xx.xx-xxxx
+
+### Changes
+
+
+
 ## [1.0.0] - 24.12-2025
 
 ### Init
