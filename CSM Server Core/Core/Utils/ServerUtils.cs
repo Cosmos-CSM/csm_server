@@ -2,12 +2,16 @@
 using System.Net.Sockets;
 using System.Text.Json;
 
+using CSM_Database_Core.Entities.Abstractions.Interfaces;
+
 using CSM_Foundation_Core.Abstractions.Interfaces;
-using CSM_Foundation_Core.Core.Exceptions;
+using CSM_Foundation_Core.Core.Errors;
 using CSM_Foundation_Core.Core.Utils;
 using CSM_Foundation_Core.Errors.Abstractions.Interfaces;
 
+using CSM_Server_Core.Abstractions.Interfaces;
 using CSM_Server_Core.Core.Models;
+using CSM_Server_Core.Middlewares;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -39,6 +43,9 @@ public static class ServerUtils {
     /// <param name="sign">
     ///     Application built time sign identification.
     /// </param>
+    /// <param name="framingMiddleware">
+    ///     Framing middleware instance with their database control methods.
+    /// </param>
     /// <param name="buildApplication">
     ///     Application building process custom call.
     /// </param>
@@ -46,11 +53,42 @@ public static class ServerUtils {
     ///     Application running configuration custom call.
     /// </param>
     /// <exception cref="InvalidDataException"></exception>
-    public static async void Start(string sign, Func<WebApplicationBuilder, ServerSettings, Task> buildApplication, Func<WebApplication, ServerSettings, Task> configApp) {
+    public static async void Start(string sign, FramingMiddleware framingMiddleware, Func<WebApplicationBuilder, ServerSettings, Task> buildApplication, Func<WebApplication, ServerSettings, Task> configApp) {
         try {
             sign = sign.ToUpper();
+            // --> Fetching for server customization module.
+            Type moduleType = typeof(IServerModule);
+            IEnumerable<Type> appAssemblies = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .SelectMany(
+                        (assembly) => {
+                            try {
+                                return assembly.GetTypes();
+                            } catch {
+                                return [];
+                            }
+                        }
+                    )
+                .Where(
+                        (type) => moduleType.IsAssignableFrom(type) && type.IsClass && !type.IsAbstract
+                    );
 
-            ConsoleUtils.Announce("Starting server engine...");
+            int serverModulesCount = appAssemblies.Count();
+            if (serverModulesCount > 1)
+                throw new InvalidDataException($"Several server modules (IServerModule) have been found but there's only one available per solution, please correct to load correctly");
+
+            IServerModule? serverModule = null;
+            if (serverModulesCount == 1) {
+                serverModule = (IServerModule)Activator.CreateInstance(appAssemblies.First())!;
+                sign = serverModule.Sign.ToUpper();
+            }
+
+            ConsoleUtils.Announce(
+                    "Starting server engine...",
+                    new Dictionary<string, object?> {
+                            { "Server Module", serverModule?.GetType()?.FullName },
+                        }
+                );
 
             ServerSettings serverSettings = GetServerSettings(sign);
 
@@ -68,40 +106,61 @@ public static class ServerUtils {
                 (CorsOptions) => {
                     CorsOptions.AddDefaultPolicy(
                     (PolicyBuilder) => {
-                                PolicyBuilder.AllowAnyHeader();
-                                PolicyBuilder.AllowAnyMethod();
-                                PolicyBuilder.SetIsOriginAllowed(
-                                    (Origin) => {
-                                        string[] corsPolicies = serverSettings.AllowedOrigins;
-                                        Uri parsedUrl = new(Origin);
+                        PolicyBuilder.AllowAnyHeader();
+                        PolicyBuilder.AllowAnyMethod();
+                        PolicyBuilder.SetIsOriginAllowed(
+                            (Origin) => {
+                                string[] corsPolicies = serverSettings.AllowedOrigins;
+                                Uri parsedUrl = new(Origin);
 
-                                        bool isCorsAllowed = corsPolicies.Contains(parsedUrl.Host);
-                                        if (!isCorsAllowed) {
-                                            ConsoleUtils.Warning(
-                                                "Origin not allowed, blocked by CORS policies.",
-                                                new() {
+                                bool isCorsAllowed = corsPolicies.Contains(parsedUrl.Host);
+                                if (!isCorsAllowed) {
+                                    ConsoleUtils.Warning(
+                                        "Origin not allowed, blocked by CORS policies.",
+                                        new() {
                                                 { nameof(parsedUrl), parsedUrl }
-                                                }
-                                            );
                                         }
+                                    );
+                                }
 
-                                        return isCorsAllowed;
-                                    }
-                                );
+                                return isCorsAllowed;
                             }
+                        );
+                    }
                 );
                 }
                 );
+
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSingleton<AdvisorMiddleware>();
+            builder.Services.AddSingleton(framingMiddleware);
+            builder.Services.AddSingleton<DispositionMiddleware>();
+
+            builder.Services.AddSingleton<IServerDisposer>(
+                    serviceProvider => new ServerDisposer(serviceProvider)
+                );
+            builder.Services.AddSingleton<IDisposer<IEntity>>(
+                    serviceProvider => serviceProvider.GetRequiredService<IServerDisposer>()
+                );
 
             // --> Passing implementation server configuration priority.
             await buildApplication(builder, serverSettings);
+            if (serverModule != null) {
+                await serverModule.BuildApp(builder, serverSettings);
+            }
 
             WebApplication app = builder.Build();
             app.MapControllers();
             app.UseCors();
 
+            app.UseMiddleware<AdvisorMiddleware>();
+            app.UseMiddleware<FramingMiddleware>();
+            app.UseMiddleware<DispositionMiddleware>();
+
             await configApp(app, serverSettings);
+            if (serverModule != null) {
+                await serverModule.ConfigureApp(app, serverSettings);
+            }
 
             ConsoleUtils.Success("Server engine set up.");
 
@@ -110,7 +169,7 @@ public static class ServerUtils {
             ConsoleUtils.Exception(AX);
             throw;
         } catch (Exception X) {
-            ConsoleUtils.Exception(new SystemError($"Engine start exception", X));
+            ConsoleUtils.Exception(new SystemError(X.Message, X));
         } finally {
             Console.WriteLine($"Press any key to close...");
             Console.ReadKey();
@@ -172,7 +231,7 @@ public static class ServerUtils {
             throw new ArgumentNullException(filePath);
 
         string host = GetHost();
-        string formattedPath = FileUtils.FormatLocation(filePath);
+        string formattedPath = FileUtils.FormatPath(filePath);
         string[] listeners = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.Split(";") ?? [];
 
 

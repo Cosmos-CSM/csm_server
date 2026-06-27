@@ -1,0 +1,371 @@
+﻿using CSM_Database_Core.Depots.Models;
+using CSM_Database_Core.Depots.ViewFilters;
+using CSM_Database_Core.Entities.Abstractions.Interfaces;
+
+using CSM_Foundation_Core.Core.Utils;
+
+using CSM_Server_Core.Abstractions.Interfaces;
+
+using CSM_Server_Core_Testing.Disposition.Abstractions.Bases;
+
+using Xunit;
+using Xunit.Sdk;
+
+namespace CSM_Server_Core_Testing.Abstractions.Bases;
+
+/// <summary>
+///     Represents an integration tests for a <see cref="IService"/> implementation.
+/// </summary>
+/// <typeparam name="TService">
+///     Type of the <see cref="IService"/> implementation to be tested.
+/// </typeparam>
+public abstract class ServiceIntegrationTestsBase<TService>
+    : DataHandlerTestsBase
+    where TService : IService {
+
+    /// <summary>
+    ///     Service instance to qualify operations.
+    /// </summary>
+    protected readonly TService _service;
+
+    /// <inheritdoc/>
+    public ServiceIntegrationTestsBase(params DatabaseFactory[] databaseFactories)
+        : base(databaseFactories) {
+
+        _service = ServiceFactory();
+    }
+
+
+    /// <summary>
+    ///     Creates a new <typeparamref name="TService"/> instance that is <see cref="IService"/> 
+    ///     implementation to be tested.
+    /// </summary>
+    /// <returns>
+    ///     A new <typeparamref name="TService"/> instance.
+    /// </returns>
+    protected abstract TService ServiceFactory();
+}
+
+/// <inheritdoc cref="ServiceIntegrationTestsBase{TService}"/>
+/// <typeparam name="TService">
+///     Type of the <see cref="IService"/> implementation to be tested.
+/// </typeparam>
+/// <typeparam name="TEntity">
+///     Type of the <see cref="IEntity"/> that is used by the <typeparamref name="TService"/>.
+/// </typeparam>
+public abstract class ServiceIntegrationTestsBase<TService, TEntity>
+    : ServiceIntegrationTestsBase<TService>
+    where TService : IService<TEntity>
+    where TEntity : class, IEntity, new() {
+
+    /// <inheritdoc/>
+    public ServiceIntegrationTestsBase(params DatabaseFactory[] databaseFactories)
+        : base(databaseFactories) {
+    }
+
+
+    /// <summary>
+    ///     Runs <see cref="DraftEntity(string)"/> giving a random entropy value.
+    /// </summary>
+    /// <returns>
+    ///     A drafter <typeparamref name="TEntity"/> object.
+    /// </returns>
+    protected TEntity RunEntityDraft() {
+
+        return RunEntityDraft(
+                DraftEntity
+            );
+    }
+
+    /// <summary>
+    ///     Creates a new <typeparamref name="TEntity"/> draft instance. 
+    /// </summary>
+    /// <returns>
+    ///     A new <typeparamref name="TEntity"/> data.
+    /// </returns>
+    /// <remarks>
+    ///     This data is not saved in live data stores is only sample data.
+    /// </remarks>
+    protected abstract TEntity DraftEntity(string entropy);
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceView{TEntity}.View(ViewInput{TEntity})"/> composes an entity view.
+    /// </summary>
+    [Fact]
+    public virtual async Task View_ComposesEntityView() {
+        // Expectation.
+        int sampleRange = 20;
+        await Store(sampleRange, DraftEntity);
+
+        ViewOutput<TEntity> viewOutput = await _service.View(
+                new() {
+                    Retroactive = false,
+                    Range = sampleRange,
+                    Page = 1,
+                }
+            );
+
+        Assert.Multiple(
+            () => Assert.True(viewOutput.Pages > 0),
+                () => Assert.True(viewOutput.Length > 0),
+                () => Assert.Equal(1, viewOutput.Page),
+                () => Assert.Equal(viewOutput.Length, viewOutput.Entities.Length)
+            );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceView{TEntity}.View(ViewInput{TEntity})"/> composes an entity view filtered by a key name contains.
+    /// </summary>
+    [Fact]
+    public virtual async Task View_ComposeEntityView_NameFilteredView() {
+
+        if (!typeof(TEntity).IsAssignableTo(typeof(INamedEntity))) {
+            throw SkipException.ForSkip("Test only supported for Named Entities.");
+        }
+
+        // Expectation
+        string testKey = RandomUtils.String(8);
+
+        // Sampling
+        List<TEntity> entities = [];
+        for (int i = 0; i <= 20; i++) {
+            INamedEntity entity = (INamedEntity)RunEntityDraft(DraftEntity);
+            entity.Name = $"{entity.Name}_{testKey}";
+
+            entities.Add((TEntity)entity);
+        }
+        TEntity[] storedEntities = await Store([.. entities]);
+
+        // Executing
+        ViewOutput<TEntity> output = await _service.View(
+                new ViewInput<TEntity> {
+                    Retroactive = true,
+                    Range = 20,
+                    Page = 1,
+                    Filters = [
+                            new ViewFilterProperty<TEntity> {
+                                    Operator = ViewFilterOperators.CONTAINS,
+                                    Property = nameof(INamedEntity.Name),
+                                    Value = testKey
+                                }
+                        ]
+                }
+            );
+
+        // Asserting
+        Assert.Equal(20, output.Length);
+        Assert.All(
+                output.Entities,
+                entity => {
+
+                    INamedEntity namedEntity = (INamedEntity)entity;
+                    Assert.Multiple(
+                            [
+                                () => Assert.Contains(testKey, namedEntity.Name),
+                                () => Assert.Contains(
+                                            storedEntities,
+                                               (storedEntity) => ((INamedEntity)storedEntity).Name == namedEntity.Name
+                                        ),
+                            ]
+                        );
+                }
+            );
+
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> creates entity when it doesn´t exist and is enabled.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public virtual async Task Update_SingleEntity_CreatesEntity() {
+        // Expectation
+        TEntity entity = RunEntityDraft(DraftEntity);
+
+        // Executing
+        UpdateOutput<TEntity> output = await _service.Update(
+                new UpdateInput<TEntity> {
+                    Create = true,
+                    Entity = entity,
+                }
+            );
+
+        // Assert
+        Assert.Null(output.Original);
+        Assert.NotNull(output.Updated);
+        Assert.Equal(entity.Id, output.Updated.Id);
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceUpdate{TEntity}.Update(UpdateInput{TEntity})"/> updates correctly an entity when it already exist.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public abstract Task Update_SingleEntity_UpdatesEntity();
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceCreate{TEntity}.Create(TEntity)"/> successfuly creates a single entity.
+    /// </summary>
+    [Fact]
+    public virtual async Task Create_SingleEntity() {
+        TEntity sampleEntity = RunEntityDraft(DraftEntity);
+        TEntity createdEntity = await _service.Create(sampleEntity);
+
+        Assert.True(
+                createdEntity.Id > 0,
+                $"Created entity Id must be greater than 0"
+            );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceCreate{TEntity}.Create(TEntity[], bool)"/> sucessfuly creates a batch of entities.
+    /// </summary>
+    [Fact]
+    public virtual async Task Create_BatchCreation_CreatesEntities() {
+        // Expectation
+        TEntity[] expEntities = [
+                RunEntityDraft(DraftEntity),
+                RunEntityDraft(DraftEntity),
+            ];
+
+        // Executing
+        BatchOperationOutput<TEntity> output = await _service.Create(expEntities);
+
+        // Asserting
+        Assert.NotNull(output);
+        Assert.Empty(output.Failures);
+        Assert.NotEmpty(output.Successes);
+        Assert.Equal(expEntities.Length, output.Successes.Length);
+
+        Assert.All(
+                output.Successes,
+                (TEntity resEntity, int index) => {
+                    TEntity expEntity = expEntities[index];
+
+                    Action[] checks = [
+                            () => Assert.Equal(expEntity.Id, resEntity.Id),
+                            () => Assert.Equal(expEntity.Timestamp, resEntity.Timestamp),
+                        ];
+
+                    if (typeof(TEntity).IsAssignableTo(typeof(INamedEntity))) {
+                        INamedEntity expEntityNamed = (INamedEntity)expEntity;
+                        INamedEntity resEntityNamed = (INamedEntity)resEntity;
+
+                        checks = [
+                                ..checks,
+                                () => Assert.Equal(expEntityNamed.Name, resEntityNamed.Name),
+                                () => Assert.Equal(expEntityNamed.Description, resEntityNamed.Description),
+                            ];
+                    }
+                }
+            );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(long)"/> sucessfuly deletes an entity by its Id.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_SinleEntity_DeletingById() {
+        // Expectation
+        TEntity expEntity = await Store(RunEntityDraft());
+
+        // Executing
+        TEntity resEntity = await _service.Delete(expEntity.Id);
+
+
+        // Asserting
+        Assert.Null(
+                Read<TEntity>(expEntity.Id)
+            );
+        Assert.NotNull(resEntity);
+        Assert.Multiple(
+                [
+                    () => Assert.Equal(expEntity.Id, resEntity.Id),
+                    () => Assert.Equal(expEntity.Timestamp, resEntity.Timestamp),
+                ]
+            );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(TEntity)"/> sucessfuly deletes an entity by itself.
+    /// </summary>
+    [Fact]
+    public virtual async Task Delete_SinleEntity_DeletingByEntity() {
+        // Expectation
+        TEntity expEntity = await Store(RunEntityDraft());
+
+        // Executing
+        TEntity resEntity = await _service.Delete(expEntity);
+
+
+        // Asserting
+        Assert.Null(
+                Read<TEntity>(expEntity.Id)
+            );
+        Assert.NotNull(resEntity);
+        Assert.Multiple(
+                [
+                    () => Assert.Equal(expEntity.Id, resEntity.Id),
+                    () => Assert.Equal(expEntity.Timestamp, resEntity.Timestamp),
+                ]
+            );
+    }
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(long[])"/> deletes a batch of entities by their ids.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public virtual async Task Delete_BatchDelete_DeletingByIds() {
+        // Expectation
+        TEntity[] expEntities = await Store(
+                2,
+                (_) => RunEntityDraft()
+            );
+
+        // Executing
+        BatchOperationOutput<TEntity> exeOutput = await _service.Delete(
+                expEntities.Select(
+                        expEntity => expEntity.Id
+                    )
+                    .ToArray()
+            );
+
+        // Asserting
+        Assert.False(exeOutput.Failed);
+        Assert.Empty(exeOutput.Failures);
+        Assert.Equal(expEntities.Length, exeOutput.OperationsCount);
+        Assert.Equal(expEntities.Length, exeOutput.SuccessesCount);
+        Assert.All(
+                expEntities,
+                (entity) => Assert.Contains(exeOutput.Successes, outputEntity => outputEntity.Id == entity.Id)
+            );
+    }
+
+
+    /// <summary>
+    ///     Tests that <see cref="IServiceDelete{TEntity}.Delete(long[])"/> deletes a batch of entities by entities objects.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public virtual async Task Delete_BatchDelete_DeletingByEntities() {
+        // Expectation
+        TEntity[] expEntities = await Store(
+                2,
+                (_) => RunEntityDraft()
+            );
+
+        // Executing
+        BatchOperationOutput<TEntity> exeOutput = await _service.Delete(expEntities);
+
+        // Asserting
+        Assert.False(exeOutput.Failed);
+        Assert.Empty(exeOutput.Failures);
+        Assert.Equal(expEntities.Length, exeOutput.OperationsCount);
+        Assert.Equal(expEntities.Length, exeOutput.SuccessesCount);
+        Assert.All(
+                expEntities,
+                (entity) => Assert.Contains(exeOutput.Successes, outputEntity => outputEntity.Id == entity.Id)
+            );
+    }
+}

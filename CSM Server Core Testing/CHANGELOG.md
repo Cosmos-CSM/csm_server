@@ -1,0 +1,55 @@
+﻿# CSM Server Core Testing CHANGELOG
+
+## [5.0.0-rc.7] - 22.06-2026
+
+### Changes
+
+- Removed the method [Update_UpdatesEntity_Create] and [Update_UpdatesEntity_NotCreate] for [Update_UpdateFromInput] using [InlineData] technique.
+- Updated pache [CSM.Foundation.Core].
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| Moq				                      | -.-.-            | 4.20.72         |
+| xunit.v3			                      | -.-.-            | 3.2.2           |
+| CSM.Foundation.Core                     | -.-.-            | 4.0.0           |
+
+## [4.0.0] - 13.02-2026
+
+### Changes
+
+- Removed the method [Update_UpdatesEntity_Create] and [Update_UpdatesEntity_NotCreate] for [Update_UpdateFromInput] using [InlineData] technique.
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| Moq				                      | -.-.-            | 4.20.72         |
+| xunit.v3			                      | -.-.-            | 3.2.2           |
+
+## [3.0.0] - 13.02-2026
+
+### Changes
+
+- Removed the method [Create_CreateMultipleEntities_Sync] and [Create_CreateMultipleEntities_NotSync] for [Create_BatchEntityCreation] using [InlineData] technique.
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| Moq				                      | -.-.-            | 4.20.72         |
+| xunit.v3			                      | -.-.-            | 3.2.2           |
+
+## [1.0.0] - 05.02-2026
+
+### Init
+
+- Initialized package adding resources for a DB Creation using EF Core about security.
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| Moq				                      | -.-.-            | 4.20.72         |
+| xunit.v3			                      | -.-.-            | 3.2.2           |
