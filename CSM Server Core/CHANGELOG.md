@@ -1,5 +1,17 @@
 ﻿# CSM Server Core CHANGELOG
 
+## [3.0.0](rc) - xx.xx-xxxx
+
+### Changes
+
+
+#### Dependencies
+
+| Package                                 | Previous Version | New Version     |
+|:----------------------------------------|:----------------:|:---------------:|
+| CSM.Database.Core                       | 6.0.6            | 6.1.0           |
+| CSM.Foundation.Core                     | 4.0.0            | 4.0.0           |
+
 ## [2.3.0] - 24.06-2026
 
 ### Patch

@@ -5,4 +5,6 @@
   </Folder>
   <Project Path="CSM Server Core Testing/CSM Server Core Testing.csproj" Id="210695c7-7703-49e2-b7ef-6e3f5570ca8a" />
   <Project Path="CSM Server Core/CSM Server Core.csproj" />
+  <Project Path="Database Proxy/Database Proxy.csproj" Id="10885354-3110-4490-869c-edd4cdcb2ff5" />
+  <Project Path="Unit Tests/Unit Tests.csproj" Id="cad80bb7-0663-4eb1-afaf-d0c629742565" />
 </Solution>
