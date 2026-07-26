@@ -1,4 +1,5 @@
 ﻿using CSM_Server_Core.Abstractions.Bases;
+using CSM_Server_Core.Core.Utils.Abstractions.Interfaces;
 
 using Database_Proxy.Depots;
 using Database_Proxy.Entities;
@@ -11,6 +12,6 @@ namespace Unit_Tests.Proxies;
 public class EntityServiceBaseProxy : EntityServiceBase<Order, IOrdersDepot> {
 
     /// <inheritdoc/>
-    public EntityServiceBaseProxy(IOrdersDepot depot) : base(depot) {
+    public EntityServiceBaseProxy(IOrdersDepot depot, IEntityServiceUtils entityServiceUtils) : base(depot, entityServiceUtils) {
     }
 }

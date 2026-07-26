@@ -4,6 +4,7 @@ using CSM_Database_Core.Entities.Abstractions.Interfaces;
 
 using CSM_Server_Core.Abstractions.Interfaces;
 using CSM_Server_Core.Core.Models;
+using CSM_Server_Core.Core.Utils.Abstractions.Interfaces;
 
 namespace CSM_Server_Core.Abstractions.Bases;
 
@@ -26,6 +27,10 @@ public abstract class EntityServiceBase<TEntity, TDepot>
     /// </summary>
     protected readonly TDepot _depot;
 
+    /// <summary>
+    ///     Entity Service common utils.
+    /// </summary>
+    protected readonly IEntityServiceUtils _eServiceUtils;
 
     /// <summary>
     ///     Creates a new instance. 
@@ -33,22 +38,24 @@ public abstract class EntityServiceBase<TEntity, TDepot>
     /// <param name="depot">
     ///     Entity type depot handler.
     /// </param>
-    public EntityServiceBase(TDepot depot) {
+    /// <param name="entityServiceUtils">
+    ///     Entity Servcice Utilities depdendency.
+    /// </param>
+    public EntityServiceBase(TDepot depot, IEntityServiceUtils entityServiceUtils) {
         _depot = depot;
+        _eServiceUtils = entityServiceUtils;
     }
 
     /// <inheritdoc/>
     public async Task<ViewOutput<TEntity>> View(EntityServiceInput<ViewInput<TEntity>> input) {
-        IEnumerable<string> relations = input.Relations ?? [];
-        relations = relations.Where(
-                relation => !string.IsNullOrWhiteSpace(relation)
-            );
-
-
+        // Here we calculate relations and applied to the query.
+        QueryProcessor<TEntity> qryProcessor = _eServiceUtils.IncludeRelations<TEntity>(input.Relations);
 
         return await _depot.View(
                 new QueryInput<TEntity, ViewInput<TEntity>> {
                     Parameters = input.Parameters,
+                    PostProcessor = qryProcessor,
+                    PreProcessor = qryProcessor,
                 }
             );
     }

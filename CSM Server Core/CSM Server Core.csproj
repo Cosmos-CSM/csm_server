@@ -27,5 +27,6 @@
     <ItemGroup>
         <PackageReference Include="CSM.Database.Core" Version="6.1.0" />
         <PackageReference Include="CSM.Foundation.Core" Version="4.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
     </ItemGroup>
 </Project>

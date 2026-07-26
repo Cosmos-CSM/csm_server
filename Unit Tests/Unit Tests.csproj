@@ -18,7 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\CSM Server Core Testing\CSM Server Core Testing.csproj" />
     <ProjectReference Include="..\CSM Server Core\CSM Server Core.csproj" />
-    <ProjectReference Include="..\Database Proxy\Database Proxy.csproj" />
   </ItemGroup>
 
   <ItemGroup>
