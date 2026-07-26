@@ -71,11 +71,10 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
     /// <returns>
     ///     A drafter <typeparamref name="TEntity"/> object.
     /// </returns>
-    protected TEntity DraftEntity() {
+    protected async Task<TEntity> DraftEntity() {
+        TEntity draft = await DraftEntity(RandomUtils.String(16));
 
-        return RunEntityDraft(
-                DraftEntity
-            );
+        return await _testingStoreManager.Store(draft);
     }
 
     /// <summary>
@@ -87,7 +86,7 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
     /// <remarks>
     ///     This data is not saved in live data stores is only sample data.
     /// </remarks>
-    protected abstract TEntity DraftEntity(string entropy);
+    protected abstract Task<TEntity> DraftEntity(string entropy);
 
     /// <method>
     ///     <see cref="EntityServiceBase{TEntity, TDepot}.View(EntityServiceInput{ViewInput{TEntity}})"/>
@@ -99,7 +98,12 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
     public virtual async Task View_ComposesEntityView() {
         // Expectation.
         int sampleRange = 20;
-        await Store(sampleRange, DraftEntity);
+        await _testingStoreManager.Store(
+                sampleRange,
+                (entropy) => {
+                    return DraftEntity(entropy).GetAwaiter().GetResult();
+                }
+            );
 
         ViewOutput<TEntity> viewOutput = await _service.View(
                 new EntityServiceInput<ViewInput<TEntity>> {
@@ -138,12 +142,12 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
         // Sampling
         List<TEntity> entities = [];
         for (int i = 0; i <= 20; i++) {
-            INamedEntity entity = (INamedEntity)RunEntityDraft(DraftEntity);
+            INamedEntity entity = (INamedEntity)await DraftEntity(RandomUtils.String(16));
             entity.Name = $"{entity.Name}_{testKey}";
 
             entities.Add((TEntity)entity);
         }
-        TEntity[] storedEntities = await Store([.. entities]);
+        TEntity[] storedEntities = await _testingStoreManager.Store([.. entities]);
 
         // Executing
         ViewOutput<TEntity> output = await _service.View(

@@ -22,14 +22,36 @@ public interface IEntityService<TEntity>
     where TEntity : class, IEntity {
 
     /// <summary>
+    ///     Updates a <typeparamref name="TEntity"/> data.
+    /// </summary>
+    /// <param name="input">
+    ///     Service input.
+    /// </param>
+    /// <returns>
+    ///     Service output.
+    /// </returns>
+    public Task<UpdateOutput<TEntity>> Update(EntityServiceInput<UpdateInput<TEntity>> input);
+
+    /// <summary>
     ///     Generates a complex data [View], works as a complex paginated query to build tables or 
     ///     analyze entity data.
     /// </summary>
     /// <param name="input">
-    ///     View input.
+    ///     Service input.
     /// </param>
     /// <returns>
-    ///     View output.
+    ///     Service output.
     /// </returns>
     public Task<ViewOutput<TEntity>> View(EntityServiceInput<ViewInput<TEntity>> input);
+
+    /// <summary>
+    ///     Creates a batch of <typeparamref name="TEntity"/> objects.
+     /// </summary>
+    /// <param name="input">
+    ///     Service input.
+    /// </param>
+    /// <returns>
+    ///     Service output.
+    /// </returns>
+    public Task<BatchOperationOutput<TEntity>> Create(TEntity[] input);
 }

@@ -47,6 +47,23 @@ public abstract class EntityServiceBase<TEntity, TDepot>
     }
 
     /// <inheritdoc/>
+    public async Task<BatchOperationOutput<TEntity>> Create(TEntity[] input) {
+        return await _depot.Create(input);
+    }
+
+    /// <inheritdoc/>
+    public async Task<UpdateOutput<TEntity>> Update(EntityServiceInput<UpdateInput<TEntity>> input) {
+        QueryProcessor<TEntity> relationsProcessor = _eServiceUtils.IncludeRelations<TEntity>(input.Relations);
+ 
+        return await _depot.Update(
+                new QueryInput<TEntity, UpdateInput<TEntity>> {
+                    Parameters = input.Parameters,
+                    PostProcessor = relationsProcessor
+                }
+            );
+    }
+
+    /// <inheritdoc/>
     public async Task<ViewOutput<TEntity>> View(EntityServiceInput<ViewInput<TEntity>> input) {
         // Here we calculate relations and applied to the query.
         QueryProcessor<TEntity> qryProcessor = _eServiceUtils.IncludeRelations<TEntity>(input.Relations);

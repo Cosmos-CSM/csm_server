@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>Unit_Tests</RootNamespace>
+    <RootNamespace>Integration_Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,12 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CSM Server Core Testing\CSM Server Core Testing.csproj" />
-    <ProjectReference Include="..\CSM Server Core\CSM Server Core.csproj" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\CSM Server Core Testing\CSM Server Core Testing.csproj" />
+    <ProjectReference Include="..\CSM Server Core\CSM Server Core.csproj" />
   </ItemGroup>
 
 </Project>

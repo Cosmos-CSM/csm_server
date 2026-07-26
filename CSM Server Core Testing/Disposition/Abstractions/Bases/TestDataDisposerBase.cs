@@ -2,7 +2,7 @@
 
 using CSM_Database_Core.Entities.Abstractions.Interfaces;
 
-using CSM_Foundation_Core.Abstractions.Interfaces;
+using CSM_Database_Testing.Disposing.Abstractions.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -23,15 +23,15 @@ public delegate DbContext DatabaseFactory();
 ///     to ensure these testing data items are removed after testing finishes.
 /// </summary>
 public abstract class TestDataDisposerBase
-    : IDisposer<IEntity> {
+    : ITestingDisposer {
 
     /// <summary>
-    ///     Current [Disposer] Database factories available.  
+    ///     Current [_disposer] Database factories available.  
     /// </summary>
     protected Dictionary<Type, DatabaseFactory> Factories { get; private init; } = [];
 
     /// <summary>
-    ///     Current [Disposer] queue entities to dispose related with their databases owners.
+    ///     Current [_disposer] queue entities to dispose related with their databases owners.
     /// </summary>
     protected ConcurrentDictionary<Type, IEntity[]> Queue { get; private init; } = [];
 

@@ -1,27 +1,28 @@
-﻿using CSM_Server_Core.Core.Utils.Abstractions.Interfaces;
+﻿using CSM_Sandbox_Database_Core.Depots.Abstractions.Interfaces;
+using CSM_Sandbox_Database_Core.Entities;
+
+using CSM_Sandbox_Database_Testing.Utils;
+
+using CSM_Server_Core.Core.Utils.Abstractions.Interfaces;
 
 using CSM_Server_Core_Testing.Abstractions.Bases;
-
-using Database_Proxy.Depots;
-using Database_Proxy.Entities;
-
-using Moq;
 
 using Unit_Tests.Proxies;
 
 namespace Unit_Tests.Tests;
 
-
 /// <summary>
-///     Unit tests class for <see cref="EntityServiceBaseProxy"/>.
+///     Entity Service Unit tests class for <see cref="EntityServiceBaseProxy"/>.
 /// </summary>
-public class EntityServiceBaseTests : EntityServiceUnitTestsBase<Order, IOrdersDepot, EntityServiceBaseProxy> {
+public class EntityServiceBaseTests
+    : EntityServiceUnitTestsBase<Order, IOrdersDepot, EntityServiceBaseProxy> {
 
-    protected override EntityServiceBaseProxy ServiceFactory(IOrdersDepot depotMock) {
-        Mock<IEntityServiceUtils> entityServiceUtilsMock = new();
-
-        return new EntityServiceBaseProxy(depotMock, entityServiceUtilsMock.Object);
+    protected override async Task<Order> DraftEntity() {
+        return DraftUtils.Order();
     }
 
+    protected override async Task<EntityServiceBaseProxy> ServiceFactory(IOrdersDepot depotMock, IEntityServiceUtils entityServiceUtilsMock) {
 
+        return new EntityServiceBaseProxy(depotMock, entityServiceUtilsMock);
+    }
 }
