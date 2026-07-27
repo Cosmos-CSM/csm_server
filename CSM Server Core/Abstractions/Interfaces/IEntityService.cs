@@ -22,6 +22,17 @@ public interface IEntityService<TEntity>
     where TEntity : class, IEntity {
 
     /// <summary>
+    ///     Deletes the given <typeparamref name="TEntity"/>.
+    /// </summary>
+    /// <param name="id">
+    ///     Entity id to remove.
+    /// </param>
+    /// <returns>
+    ///     Removed entity.
+    /// </returns>
+    public Task<TEntity> Delete(long id);
+
+    /// <summary>
     ///     Updates a <typeparamref name="TEntity"/> data.
     /// </summary>
     /// <param name="input">
@@ -46,7 +57,7 @@ public interface IEntityService<TEntity>
 
     /// <summary>
     ///     Creates a batch of <typeparamref name="TEntity"/> objects.
-     /// </summary>
+    /// </summary>
     /// <param name="input">
     ///     Service input.
     /// </param>

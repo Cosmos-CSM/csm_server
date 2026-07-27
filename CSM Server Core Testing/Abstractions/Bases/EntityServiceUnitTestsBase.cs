@@ -189,6 +189,103 @@ public abstract class EntityServiceUnitTestsBase<TEntity, TDepot, TService>
             );
     }
 
+    /// Method:
+    ///     <see cref="EntityServiceBase{TEntity, TDepot}.Update(EntityServiceInput{UpdateInput{TEntity}})"/>
+    /// 
+    /// Expectation:
+    ///     Update depot method is called once and entity service utilities include relations are called also once.
+    [Fact]
+    public virtual async Task Update_UpdatedEntity() {
+        // Expectation
+        TEntity entity = await DraftEntity();
+        entity.Id = -100;
+
+        // Setup
+        (
+            Mock<TDepot> depotMock,
+            Mock<IEntityServiceUtils> entityServiceUtilsMock,
+            TService service
+        ) = await MockService();
+
+        depotMock.Setup(
+                obj => obj.Update(
+                        It.IsAny<QueryInput<TEntity, UpdateInput<TEntity>>>()
+                    )
+            )
+            .Returns(
+                    async (QueryInput<TEntity, UpdateInput<TEntity>> queryInput) => {
+                        return new UpdateOutput<TEntity> {
+                            Original = queryInput.Parameters.Entity,
+                            Updated = queryInput.Parameters.Entity
+                        };
+                    }
+                );
+
+        // Act
+        UpdateOutput<TEntity> output = await service.Update(
+                new EntityServiceInput<UpdateInput<TEntity>> {
+                    Parameters = new UpdateInput<TEntity> {
+                        Entity = entity
+                    },
+                    Relations = [],
+                }
+            );
+
+        // Asserting.
+        Assert.NotNull(output.Original);
+        Assert.NotNull(output.Updated);
+        Assert.Equal(entity.Id, output.Original.Id);
+        Assert.Equal(entity.Id, output.Updated.Id);
+    }
+
+    /// Method:
+    ///     <see cref="EntityServiceBase{TEntity, TDepot}.Delete(long)"/>
+    /// 
+    /// Expectaction:
+    ///     Delete depot method is called from id value.
+    [Fact]
+    public virtual async Task Delete_DeletedEntityById() {
+        // Expect.
+        long id = -100;
+
+        // Setup 
+        (
+            Mock<TDepot> depotMock,
+            Mock<IEntityServiceUtils> entityServiceUtilsMock,
+            TService service
+        ) = await MockService();
+
+        depotMock.Setup(
+                obj => obj.Delete(
+                        It.Is<long>(
+                                paramValue => paramValue == id
+                            )
+                    )
+            )
+            .Returns(
+                async (long id) => {
+                    return new TEntity {
+                        Id = id
+                    };
+                }
+            );
+
+        // Act
+        TEntity deletedEntityObj = await service.Delete(id);
+
+        // Asserting
+        Assert.NotNull(deletedEntityObj);
+        Assert.Equal(id, deletedEntityObj.Id);
+        depotMock.Verify(
+                obj => obj.Delete(
+                        It.Is<long>(
+                                paramVal => paramVal == id
+                            )
+                    ),
+                Times.Once
+            );
+    }
+
     /// <summary>
     ///     Mocks service dependencies and generates the service instance.
     /// </summary>
