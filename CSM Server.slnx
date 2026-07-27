@@ -3,7 +3,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
   </Folder>
-  <Project Path="CSM Server Core Testing/CSM Server Core Testing.csproj" Id="210695c7-7703-49e2-b7ef-6e3f5570ca8a" />
+  <Project Path="CSM Server Core Testing/CSM Server Testing.csproj" Id="210695c7-7703-49e2-b7ef-6e3f5570ca8a" />
   <Project Path="CSM Server Core/CSM Server Core.csproj" />
   <Project Path="Integration Tests/Integration Tests.csproj" Id="8725f93e-309e-4233-a842-fa504fc27318" />
   <Project Path="Unit Tests/Unit Tests.csproj" Id="cad80bb7-0663-4eb1-afaf-d0c629742565" />

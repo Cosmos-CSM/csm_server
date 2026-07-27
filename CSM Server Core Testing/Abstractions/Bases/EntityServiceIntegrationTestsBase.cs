@@ -9,12 +9,12 @@ using CSM_Foundation_Core.Core.Utils;
 using CSM_Server_Core.Abstractions.Interfaces;
 using CSM_Server_Core.Core.Models;
 
-using CSM_Server_Core_Testing.Disposition.Abstractions.Bases;
+using CSM_Server_Testing.Disposition.Abstractions.Bases;
 
 using Xunit;
 using Xunit.Sdk;
 
-namespace CSM_Server_Core_Testing.Abstractions.Bases;
+namespace CSM_Server_Testing.Abstractions.Bases;
 
 /// <summary>
 ///     Represents an integration tests for a <see cref="IService"/> implementation.

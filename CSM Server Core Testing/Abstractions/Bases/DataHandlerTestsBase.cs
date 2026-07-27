@@ -2,12 +2,12 @@
 
 using CSM_Database_Testing.Managers;
 
-using CSM_Server_Core_Testing.Disposition;
-using CSM_Server_Core_Testing.Disposition.Abstractions.Bases;
+using CSM_Server_Testing.Disposition;
+using CSM_Server_Testing.Disposition.Abstractions.Bases;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace CSM_Server_Core_Testing.Abstractions.Bases;
+namespace CSM_Server_Testing.Abstractions.Bases;
 
 /// <summary>
 ///     Public Delegate for [Entity] factory [Quality] purposes.

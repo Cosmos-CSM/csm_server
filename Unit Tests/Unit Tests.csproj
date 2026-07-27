@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CSM Server Core Testing\CSM Server Core Testing.csproj" />
+    <ProjectReference Include="..\CSM Server Core Testing\CSM Server Testing.csproj" />
     <ProjectReference Include="..\CSM Server Core\CSM Server Core.csproj" />
   </ItemGroup>
 

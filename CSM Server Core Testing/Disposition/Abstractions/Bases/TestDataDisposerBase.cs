@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace CSM_Server_Core_Testing.Disposition.Abstractions.Bases;
+namespace CSM_Server_Testing.Disposition.Abstractions.Bases;
 
 /// <summary>
 ///     Public Delegate for [database] factory [Quality] purposes.

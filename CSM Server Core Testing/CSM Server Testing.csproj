@@ -1,20 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<RootNamespace>CSM_Server_Core_Testing</RootNamespace>
-		<PackageId>CSM.Server.Core.Testing</PackageId>
-		<Version>5.0.0-rc.7</Version>
+		<Version>5.0.0</Version>
+		
 		<Authors>Renato Urrea</Authors>
 		<Company>Cosmos (CSM)</Company>
+		<PackageId>CSM.Server.Testing</PackageId>
+		<RootNamespace>CSM_Server_Testing</RootNamespace>
 		<RepositoryUrl>https://github.com/Cosmos-CSM/csm_server</RepositoryUrl>
+		
+		<OutputType>Exe</OutputType>
+		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<PackageReleaseNotes> See notes at (LINK TO REPO): </PackageReleaseNotes>
+		
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
-		<IsPackable>true</IsPackable>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<OutputType>Exe</OutputType>
 	</PropertyGroup>
 
   <ItemGroup>

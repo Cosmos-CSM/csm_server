@@ -1,6 +1,6 @@
-﻿using CSM_Server_Core_Testing.Disposition.Abstractions.Bases;
+﻿using CSM_Server_Testing.Disposition.Abstractions.Bases;
 
-namespace CSM_Server_Core_Testing.Disposition;
+namespace CSM_Server_Testing.Disposition;
 
 /// <inheritdoc cref="TestDataDisposerBase"/>
 public class TestDataDisposer 

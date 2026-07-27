@@ -12,7 +12,7 @@ using Moq;
 using Xunit;
 using Xunit.Sdk;
 
-namespace CSM_Server_Core_Testing.Abstractions.Bases;
+namespace CSM_Server_Testing.Abstractions.Bases;
 
 /// <summary>
 ///     Represents a <see cref="IService"/> tests class.

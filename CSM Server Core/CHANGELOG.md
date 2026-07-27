@@ -1,16 +1,21 @@
 ﻿# CSM Server Core CHANGELOG
 
-## [3.0.0](rc) - xx.xx-xxxx
+## [3.0.0] - 27.07-2026
 
 ### Changes
 
+- Now [Service] concept it's different from [EntityService].
+- Updated support for [EntityService] base operations.
+- Included a relations https friendly loading along depots and services.
+- Fixed update operations.
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|
-| CSM.Database.Core                       | 6.0.6            | 6.1.0           |
+| CSM.Database.Core                       | 6.1.0            | 7.0.0           |
 | CSM.Foundation.Core                     | 4.0.0            | 4.0.0           |
+| Microsoft.EntityFramework.Core          | -.-.-            | 10.0.10         |
 
 ## [2.3.0] - 24.06-2026
 
@@ -18,7 +23,7 @@
 
 - Updated packages [CSM.Database.Core] for impact version.
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|
@@ -32,7 +37,7 @@
 
 - Updated packages [CSM.Database.Core] and [CSM.Foundation.Core].
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|
@@ -45,7 +50,7 @@
 
 - Parched [CSM.Foundation.Core] package to get an important fix for error handling.
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|
@@ -61,7 +66,7 @@
 
 - Now start engine method requires the framing middleware instance configuration to work.
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|
@@ -77,7 +82,7 @@
 
 - A new interface [IServerModule] was added to identify a customization server module to inject configurations.
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|
@@ -89,7 +94,7 @@
 
 - Initialized package adding resources for a DB Creation using EF Core about security.
 
-#### Dependencies
+### Dependencies
 
 | Package                                 | Previous Version | New Version     |
 |:----------------------------------------|:----------------:|:---------------:|

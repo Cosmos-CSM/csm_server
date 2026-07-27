@@ -5,7 +5,7 @@ using CSM_Sandbox_Database_Testing.Utils;
 
 using CSM_Server_Core.Core.Utils.Abstractions.Interfaces;
 
-using CSM_Server_Core_Testing.Abstractions.Bases;
+using CSM_Server_Testing.Abstractions.Bases;
 
 using Unit_Tests.Proxies;
 
