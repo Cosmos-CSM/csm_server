@@ -2,9 +2,10 @@
 using CSM_Database_Core.Depots.ViewFilters;
 using CSM_Database_Core.Entities.Abstractions.Interfaces;
 
+using CSM_Database_Testing.Managers;
+
 using CSM_Foundation_Core.Core.Utils;
 
-using CSM_Server_Core.Abstractions.Bases;
 using CSM_Server_Core.Abstractions.Interfaces;
 using CSM_Server_Core.Core.Models;
 
@@ -88,15 +89,41 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
     /// </remarks>
     protected abstract Task<TEntity> DraftEntity(string entropy);
 
-    /// <method>
-    ///     <see cref="EntityServiceBase{TEntity, TDepot}.View(EntityServiceInput{ViewInput{TEntity}})"/>
-    /// </method>
-    /// <expectation>
-    ///     A [View] is generated with no errors.
-    /// </expectation>
+    /// Use Case:
+    ///     - Stores an entity.
+    ///     - Calls delete operation giving entity id.
+    /// Expectation:
+    ///     - Entity deleted is correctly the given id one.
+    ///     - Entity in fact exist no more in database.
     [Fact]
-    public virtual async Task View_ComposesEntityView() {
-        // Expectation.
+    public virtual async Task Delete_EntityDeleted() {
+        // Setup.
+        TEntity entity = await _testingStoreManager.Store(
+                (entropy) => {
+                    return DraftEntity(entropy).GetAwaiter().GetResult();
+                }
+            );
+
+        // Act.
+        TEntity deletedEntity = await _service.Delete(entity.Id);
+
+        // Assert.
+        Assert.NotNull(deletedEntity);
+        Assert.Equal(entity.Id, deletedEntity.Id);
+
+    }
+
+    /// Use Case: 
+    ///     - We store 20 (sample range) entities in the database.
+    ///     - Generate a view with following configuration:
+    ///         - Page: 1
+    ///         - Range: 20
+    ///         - Retroactive: false
+    /// Expectation:
+    ///     - We get and exactly 20 items view with page 1.
+    [Fact]
+    public virtual async Task View_SimpleView() {
+        // Expect.
         int sampleRange = 20;
         await _testingStoreManager.Store(
                 sampleRange,
@@ -105,6 +132,7 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
                 }
             );
 
+        // Act.
         ViewOutput<TEntity> viewOutput = await _service.View(
                 new EntityServiceInput<ViewInput<TEntity>> {
                     Parameters = new() {
@@ -115,6 +143,7 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
                 }
             );
 
+        // Assert.
         Assert.Multiple(
             () => Assert.True(viewOutput.Pages > 0),
                 () => Assert.True(viewOutput.Length > 0),
@@ -123,52 +152,61 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
             );
     }
 
-    /// <method>
-    ///     <see cref="EntityServiceBase{TEntity, TDepot}.View(EntityServiceInput{ViewInput{TEntity}})"/>
-    /// </method>
-    /// <expectation>
-    ///     A [View] is generated with no errors and with entries filtered correctly by a test sampled name property. 
-    /// </expectation>
+    /// <see cref="INamedEntity"/> EXCLUSIVE TEST, override for extended behavior.
+    /// Use Case: 
+    ///     - Stores 20 entities in database with an specific token.
+    ///     - Generates a view with following configruations:
+    ///         - Page: 1
+    ///         - Range: 20
+    ///         - Retroative: true
+    ///         - Filters: ViewFilterProperty[CONTAINS(NAME => NAME == randomToken)]
+    /// Expectation:
+    ///     - We get exactly 20 items view.
+    ///     - All view items have the filtered expected token.
     [Fact]
-    public virtual async Task View_ComposeEntityView_NameFilteredView() {
+    public virtual async Task View_FilteredView() {
 
         if (!typeof(TEntity).IsAssignableTo(typeof(INamedEntity))) {
             throw SkipException.ForSkip("Test only supported for Named Entities.");
         }
 
-        // Expectation
-        string testKey = RandomUtils.String(8);
+        // Expect.
+        string expNameToken = RandomUtils.String(8);
+        int expRange = 20;
 
-        // Sampling
+        // Setup.
         List<TEntity> entities = [];
-        for (int i = 0; i <= 20; i++) {
-            INamedEntity entity = (INamedEntity)await DraftEntity(RandomUtils.String(16));
-            entity.Name = $"{entity.Name}_{testKey}";
+        for (int i = 0; i <= expRange; i++) {
+            INamedEntity entity = (INamedEntity)TestingStoreManager.RunEntityFactory(
+                    (entropy) => DraftEntity(entropy).GetAwaiter().GetResult()
+                );
+
+            entity.Name = $"{entity.Name}_{expNameToken}";
 
             entities.Add((TEntity)entity);
         }
         TEntity[] storedEntities = await _testingStoreManager.Store([.. entities]);
 
-        // Executing
+        // Act.
         ViewOutput<TEntity> output = await _service.View(
                 new EntityServiceInput<ViewInput<TEntity>> {
                     Parameters = new ViewInput<TEntity> {
-                        Retroactive = true,
-                        Range = 20,
                         Page = 1,
+                        Range = expRange,
+                        Retroactive = true,
                         Filters = [
                             new ViewFilterProperty<TEntity> {
                                     Operator = ViewFilterOperators.CONTAINS,
                                     Property = nameof(INamedEntity.Name),
-                                    Value = testKey
+                                    Value = expNameToken
                                 }
                         ]
                     },
                 }
             );
 
-        // Asserting
-        Assert.Equal(20, output.Length);
+        // Assert.
+        Assert.Equal(expRange, output.Length);
         Assert.All(
                 output.Entities,
                 entity => {
@@ -176,7 +214,7 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
                     INamedEntity namedEntity = (INamedEntity)entity;
                     Assert.Multiple(
                             [
-                                () => Assert.Contains(testKey, namedEntity.Name),
+                                () => Assert.Contains(expNameToken, namedEntity.Name),
                                 () => Assert.Contains(
                                             storedEntities,
                                                (storedEntity) => ((INamedEntity)storedEntity).Name == namedEntity.Name
@@ -185,6 +223,106 @@ public abstract class EntityServiceIntegrationTestsBase<TEntity, TEntityService>
                         );
                 }
             );
+    }
 
+    /// Use Case:
+    ///     - Drafts 20 entities.
+    ///     - Calls create service operation.
+    /// Expectation:
+    ///     - Entities got created with a valid generated id value.
+    [Fact]
+    public virtual async Task Create_BatchCreation() {
+        // Expect.
+        int expRange = 20;
+        TEntity[] expEntities = [];
+
+        // Setup.
+        for (int i = 0; i < expRange; i++) {
+            TEntity draftEntity = TestingStoreManager.RunEntityFactory(
+                    (string entropy) => {
+                        return DraftEntity(entropy).GetAwaiter().GetResult();
+                    }
+                );
+
+            expEntities = [
+                    ..expEntities, draftEntity
+                ];
+        }
+
+        // Act.
+        BatchOperationOutput<TEntity> createOutput = await _service.Create(expEntities);
+
+        // Assert.
+        Assert.False(createOutput.FullFailed);
+        Assert.False(createOutput.Failed);
+        Assert.Empty(createOutput.Failures);
+        Assert.Equal(0, createOutput.FailuresCount);
+
+        Assert.Equal(expRange, createOutput.OperationsCount);
+        Assert.Equal(expRange, createOutput.SuccessesCount);
+        Assert.Equal(expRange, createOutput.Successes.Length);
+
+        Assert.All(
+                createOutput.Successes,
+                (createdEntity) => {
+
+                    Assert.NotEqual(0, createdEntity.Id);
+                }
+            );
+    }
+
+    /// <see cref="INamedEntity"/> EXCLUSIVE TEST, override for extended behavior.
+    /// Use Case:
+    ///     - We store an entity with an specific description value.
+    ///     - Update description value for a new one.
+    ///     - Call update service operation to save new description.
+    /// Expectation:
+    ///     - Updates successes,
+    ///     - Original entity matches previous values and entity correct id.
+    ///     - Updated entity matches updated values and entity correct id.
+    [Fact]
+    public virtual async Task Update_EntityUpdated() {
+        // Restrict
+        if (!typeof(TEntity).IsAssignableTo(typeof(INamedEntity))) {
+            throw SkipException.ForSkip("Test only supported for Named Entities.");
+        }
+
+        // Expect
+        string expNewDescription = "new_description";
+        string expOldDescription = "old_description";
+
+
+        // Setup
+        INamedEntity entity = (INamedEntity)TestingStoreManager.RunEntityFactory(
+                (entropy) => {
+                    return DraftEntity(entropy).GetAwaiter().GetResult();
+                }
+            );
+
+        entity.Description = expOldDescription;
+        entity = (INamedEntity)await _testingStoreManager.Store((TEntity)entity);
+
+        // Act
+        entity.Description = expNewDescription;
+        UpdateOutput<TEntity> output = await _service.Update(
+                new EntityServiceInput<UpdateInput<TEntity>> {
+                    Parameters = new UpdateInput<TEntity> {
+                        Entity = (TEntity)entity,
+                    }
+                }
+            );
+
+        // Assert.
+        INamedEntity? original = (INamedEntity?)output.Original;
+        Assert.NotNull(original);
+        Assert.Equal(entity.Id, original.Id);
+        Assert.Equal(entity.Name, original.Name);
+        Assert.Equal(expOldDescription, original.Description);
+
+        INamedEntity? updated = (INamedEntity?)output.Updated;
+        Assert.NotNull(updated);
+        Assert.Equal(entity.Id, updated.Id);
+        Assert.Equal(entity.Name, updated.Name);
+        Assert.Equal(expNewDescription, updated.Description);
     }
 }
