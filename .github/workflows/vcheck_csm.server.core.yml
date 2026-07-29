@@ -6,12 +6,14 @@ on:
       - main
     types: [opened, synchronize]
     paths:
-      - 'CSM Server Core/**'
+      - 'CSM Server/**'
 
+env:
+  SOLUTION_PATH: "${{ vars.SOLUTION_PATH }}"
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    if: github.base_ref == 'main' && github.head_ref == 'dev'
+    if: github.base_ref == 'main'
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v3
@@ -21,7 +23,7 @@ jobs:
       - name: Define project path
         id: config
         run: |
-          echo 'project_path="CSM Server Core/CSM Server Core.csproj"' >> $GITHUB_OUTPUT
+          echo 'project_path="${SOLUTION_PATH}/CSM Server Core.csproj"' >> $GITHUB_OUTPUT
 
       - name: Get version from PR branch
         id: pr_version
