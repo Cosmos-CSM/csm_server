@@ -1,4 +1,4 @@
-name: Version Check [CSM Server Core Testing]
+name: Version Check [CSM Server Testing]
 
 on:
   pull_request:
