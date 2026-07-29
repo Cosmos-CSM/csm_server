@@ -94,7 +94,7 @@ jobs:
 
       - name: Apply migrations on project
         run: |
-          csmdk db -p "${TEST_PROJECT_PATH}"
+          csmdk db -p "${TEST_PROJECT_PATH}" -d "CSM.Sandbox.Database.Core"
 
       - name: Run integration tests
         run: |
