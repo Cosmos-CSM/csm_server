@@ -20,7 +20,7 @@ jobs:
       - name: Define project path
         id: config
         run: |
-          echo 'project_path="CSM Server/CSM Server Core.csproj"' >> $GITHUB_OUTPUT
+          echo 'project_path="CSM Server/CSM Server Core/CSM Server Core.csproj"' >> $GITHUB_OUTPUT
 
       - name: Get version from PR branch
         id: pr_version
