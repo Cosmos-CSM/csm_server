@@ -90,7 +90,7 @@ jobs:
 
       - name: Install CSM DevKit Tool
         run: |
-          dotnet tools install --global CSM.DevKit
+          dotnet tool install --global CSM.DevKit
 
       - name: Apply migrations on project
         run: |
