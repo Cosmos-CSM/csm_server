@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Version>5.0.0</Version>
+		
+		<Authors>Renato Urrea</Authors>
+		<Company>Cosmos (CSM)</Company>
+		<PackageId>CSM.Server.Testing</PackageId>
+		<RootNamespace>CSM_Server_Testing</RootNamespace>
+		<RepositoryUrl>https://github.com/Cosmos-CSM/csm_server</RepositoryUrl>
+		
+		<OutputType>Exe</OutputType>
+		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<PackageReleaseNotes> See notes at (LINK TO REPO): </PackageReleaseNotes>
+		
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSM.Database.Testing" Version="8.0.0" />
+    <PackageReference Include="CSM.Foundation.Core" Version="4.0.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CSM Server Core\CSM Server Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="CHANGELOG.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+</Project>
