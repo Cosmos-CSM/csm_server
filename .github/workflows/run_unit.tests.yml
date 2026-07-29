@@ -46,12 +46,12 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore "CSM Server/"
 
       - name: Build solution
         run: |
-          dotnet build --no-restore --configuration Release
+          dotnet build --no-restore --configuration Release "CSM Server/"
 
       - name: Run tests
         run: |
-          dotnet test "./Unit Tests/Unit Tests.csproj" --no-build --configuration Release --verbosity normal
+          dotnet test "CSM Server/Unit Tests/Unit Tests.csproj" --no-build --configuration Release --verbosity normal

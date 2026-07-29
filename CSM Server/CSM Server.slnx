@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="CSM Server Core/CSM Server Core.csproj" />
+  <Project Path="CSM Server Testing/CSM Server Testing.csproj" />
+  <Project Path="Integration Tests/Integration Tests.csproj" Id="8725f93e-309e-4233-a842-fa504fc27318" />
+  <Project Path="Unit Tests/Unit Tests.csproj" Id="cad80bb7-0663-4eb1-afaf-d0c629742565" />
+</Solution>

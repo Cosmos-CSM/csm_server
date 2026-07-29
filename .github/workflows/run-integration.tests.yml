@@ -1,0 +1,101 @@
+name: Run Integration Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      TEST_PROJECT_PATH: CSM Server/Integration Tests/
+      SQL_SERVER_PASSWORD: "P@ssw0rd123!"
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          SA_PASSWORD: "P@ssw0rd123!"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Wait for SQL Server to be ready
+        run: |
+          for i in {1..30}; do
+            /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P "P@ssw0rd123!" -Q "SELECT 1" && break
+            echo "SQL Server not ready yet..."
+            sleep 2
+          done
+
+      - name: Create database "CSM Sandbox"
+        run: |
+          dotnet new console -o createdb >/dev/null 2>&1
+          cat << 'EOF' > createdb/Program.cs
+          using System;
+          using Microsoft.Data.SqlClient;
+
+          class P {
+              static void Main() {
+                  var cs = "Server=localhost,1433;User Id=sa;Password=P@ssw0rd123!;TrustServerCertificate=True";
+                  using var conn = new SqlConnection(cs);
+                  conn.Open();
+                  using var cmd = conn.CreateCommand();
+                  cmd.CommandText = "IF DB_ID('CSM Sandbox') IS NULL CREATE DATABASE [CSM Sandbox]";
+                  cmd.ExecuteNonQuery();
+                  Console.WriteLine("Database created.");
+              }
+          }
+          EOF
+          dotnet add createdb package Microsoft.Data.SqlClient >/dev/null
+          dotnet run --project createdb
+
+      - name: Authenticate to GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username "${{ github.actor }}" \
+            --password "${{ secrets.PUBLISH_PAT }}" \
+            --store-password-in-clear-text \
+            --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Create design db connection options and store env variable
+        run: |
+          cat << 'EOF' > dbconfig.json
+          {
+            "Host": "localhost",
+            "Name": "CSM Sandbox",
+            "User": "sa",
+            "Password": "P@ssw0rd123!",
+            "IntegratedSecurity": false,
+            "Trust": true
+          }
+          EOF
+          
+          CONFIG_PATH="$(pwd)/dbconfig.json"
+          echo "csmsb_design_connection=$CONFIG_PATH" >> $GITHUB_ENV
+          echo "Q_CSMSB.Connection=$CONFIG_PATH" >> $GITHUB_ENV
+
+          echo "Config file created at: $CONFIG_PATH"
+          echo "Environment variable csms_design_connection set."
+
+      - name: Install CSM DevKit Tool
+        run: |
+          dotnet tool install --global CSM.DevKit
+
+      - name: Apply migrations on project
+        run: |
+          csmdk db -p "${TEST_PROJECT_PATH}" -d "CSM.Sandbox.Database.Core"
+
+      - name: Run integration tests
+        run: |
+          dotnet test "${TEST_PROJECT_PATH}" --logger "trx"

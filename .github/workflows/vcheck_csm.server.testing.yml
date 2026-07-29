@@ -6,7 +6,7 @@ on:
       - main
     types: [opened, synchronize]
     paths:
-      - 'CSM Server Core Testing/**'
+      - 'CSM Server/CSM Server Testing/**'
 
 jobs:
   check-version:
@@ -21,7 +21,7 @@ jobs:
       - name: Define project path
         id: config
         run: |
-          echo 'project_path="CSM Server Core Testing/CSM Server Core Testing.csproj"' >> $GITHUB_OUTPUT
+          echo 'project_path="CSM Server/CSM Server Testing/CSM Server Testing.csproj"' >> $GITHUB_OUTPUT
 
       - name: Get version from PR branch
         id: pr_version

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+		<Version>3.0.0</Version>
+
+		<Authors>Renato Urrea</Authors>
+		<Company>Cosmos (CSM)</Company>
+		<PackageId>CSM.Server.Core</PackageId>
+		<RepositoryUrl>https://github.com/Cosmos-CSM/csm_server</RepositoryUrl>
+		
+		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>CSM_Server_Core</RootNamespace>
+    </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="CHANGELOG.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CSM.Database.Core" Version="7.0.0" />
+        <PackageReference Include="CSM.Foundation.Core" Version="4.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10"/>
+    </ItemGroup>
+</Project>
