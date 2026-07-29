@@ -31,5 +31,6 @@
         <PackageReference Include="CSM.Database.Core" Version="7.0.0" />
         <PackageReference Include="CSM.Foundation.Core" Version="4.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10"/>
     </ItemGroup>
 </Project>
