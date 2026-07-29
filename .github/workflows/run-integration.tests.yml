@@ -88,6 +88,14 @@ jobs:
           echo "Config file created at: $CONFIG_PATH"
           echo "Environment variable csms_design_connection set."
 
+      - name: Install CSM DevKit Tool
+        run: |
+          dotnet tools install --global CSM.DevKit
+
+      - name: Apply migrations on project
+        run: |
+          csmdk db -p "${TEST_PROJECT_PATH}"
+
       - name: Run integration tests
         run: |
           dotnet test "${TEST_PROJECT_PATH}" --logger "trx"
