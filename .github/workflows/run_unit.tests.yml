@@ -1,0 +1,55 @@
+name: Run Unit Tests
+
+on:
+  pull_request:
+    branches: [ dev, main ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  unit_testing:
+    name: Unit Testing
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🔑 Configure NuGet to use GitHub Packages
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.PUBLISH_PAT }}
+        run: |
+          dotnet nuget add source \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --name "github" \
+            --username ${{ github.actor }} \
+            --password "$NUGET_AUTH_TOKEN" \
+            --store-password-in-clear-text
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'    # ← install .NET 8
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: |
+          dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: |
+          dotnet test "./Unit Tests/Unit Tests.csproj" --no-build --configuration Release --verbosity normal
