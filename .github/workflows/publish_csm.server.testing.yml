@@ -35,7 +35,7 @@ jobs:
             --name "github" \
             --username ${{ github.actor }} \
             --password "$NUGET_AUTH_TOKEN" \
-            --store-password-in-clear-text
+            --store-password-in-clear-text 
 
       - name: ⚙️ Setup .NET
         uses: actions/setup-dotnet@v4
