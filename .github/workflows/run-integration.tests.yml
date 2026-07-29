@@ -1,57 +1,93 @@
 name: Run Integration Tests
 
 on:
-  workflow_dispatch: 
-
   pull_request:
-    branches: [ dev, main ]
-    types: [ opened, synchronize, reopened ]
+    branches: [ main ]
 
 jobs:
-  integration_testing:
-    name: Integration Testing
+  integration-tests:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
+
+    env:
+      TEST_PROJECT_PATH: CSM Server/Integration Tests/
+      SQL_SERVER_PASSWORD: "P@ssw0rd123!"
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          SA_PASSWORD: "P@ssw0rd123!"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-      - name: 🔑 Configure NuGet to use GitHub Packages
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.PUBLISH_PAT }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Wait for SQL Server to be ready
+        run: |
+          for i in {1..30}; do
+            /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U sa -P "P@ssw0rd123!" -Q "SELECT 1" && break
+            echo "SQL Server not ready yet..."
+            sleep 2
+          done
+
+      - name: Create database "CSM Sandbox"
+        run: |
+          dotnet new console -o createdb >/dev/null 2>&1
+          cat << 'EOF' > createdb/Program.cs
+          using System;
+          using Microsoft.Data.SqlClient;
+
+          class P {
+              static void Main() {
+                  var cs = "Server=localhost,1433;User Id=sa;Password=P@ssw0rd123!;TrustServerCertificate=True";
+                  using var conn = new SqlConnection(cs);
+                  conn.Open();
+                  using var cmd = conn.CreateCommand();
+                  cmd.CommandText = "IF DB_ID('CSM Sandbox') IS NULL CREATE DATABASE [CSM Sandbox]";
+                  cmd.ExecuteNonQuery();
+                  Console.WriteLine("Database created.");
+              }
+          }
+          EOF
+          dotnet add createdb package Microsoft.Data.SqlClient >/dev/null
+          dotnet run --project createdb
+
+      - name: Authenticate to GitHub Packages
         run: |
           dotnet nuget add source \
-            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-            --name "github" \
-            --username ${{ github.actor }} \
-            --password "$NUGET_AUTH_TOKEN" \
-            --store-password-in-clear-text
+            --username "${{ github.actor }}" \
+            --password "${{ secrets.PUBLISH_PAT }}" \
+            --store-password-in-clear-text \
+            --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '10.0.x'    # ← install .NET 8
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Restore dependencies
-        run: dotnet restore "CSM Server/"
-
-      - name: Build solution
+      - name: Create design db connection options and store env variable
         run: |
-          dotnet build --no-restore --configuration Release "CSM Server/"
+          cat << 'EOF' > dbconfig.json
+          {
+            "Host": "localhost",
+            "Name": "CSM Sandbox",
+            "User": "sa",
+            "Password": "P@ssw0rd123!",
+            "IntegratedSecurity": false,
+            "Trust": true
+          }
+          EOF
+          
+          CONFIG_PATH="$(pwd)/dbconfig.json"
+          echo "csmsb_design_connection=$CONFIG_PATH" >> $GITHUB_ENV
+          echo "Q_CSMSB.Connection=$CONFIG_PATH" >> $GITHUB_ENV
 
-      - name: Run tests
+          echo "Config file created at: $CONFIG_PATH"
+          echo "Environment variable csms_design_connection set."
+
+      - name: Run integration tests
         run: |
-          dotnet test "CSM Server/Integration Tests/Integration Tests.csproj" --no-build --configuration Release --verbosity normal
+          dotnet test "${TEST_PROJECT_PATH}" --logger "trx"
