@@ -7,9 +7,6 @@ on:
     types: [opened, synchronize]
     paths:
       - 'CSM Server/**'
-
-env:
-  SOLUTION_PATH: "${{ vars.SOLUTION_PATH }}"
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -23,7 +20,7 @@ jobs:
       - name: Define project path
         id: config
         run: |
-          echo 'project_path="${SOLUTION_PATH}/CSM Server Core.csproj"' >> $GITHUB_OUTPUT
+          echo 'project_path="CSM Server/CSM Server Core.csproj"' >> $GITHUB_OUTPUT
 
       - name: Get version from PR branch
         id: pr_version
