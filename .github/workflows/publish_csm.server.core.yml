@@ -9,7 +9,7 @@ on:
     branches:
       - main
     paths:
-      - 'CSM Server Core/**'
+      - 'CSM Server/CSM Server Core/**'
 
 permissions:
   contents: read
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CS_PROJECT_PATH: 'CSM Server Core/CSM Server Core.csproj'
+      CS_PROJECT_PATH: 'CSM Server/CSM Server Core/CSM Server Core.csproj'
 
     steps:
       - name: 🔄 Checkout repo
@@ -40,7 +40,7 @@ jobs:
       - name: ⚙️ Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: 🔧 Restore & Build
         run: |
