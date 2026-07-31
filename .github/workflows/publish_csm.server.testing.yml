@@ -1,4 +1,4 @@
-name: Publish [CSM Server Core Testing]
+name: Publish [CSM Server Testing]
 
 on:
   # 1) Manual trigger in the Actions tab
